@@ -1,0 +1,55 @@
+---
+sidebar: sidebar 
+permalink: trident-reference/trident-cl.html 
+keywords: command-line, options, logging, kubernetes, docker, ports 
+summary: Trident stellt mehrere Befehlszeilenoptionen für den Trident -Orchestrator bereit und kommuniziert über bestimmte Ports. 
+---
+= Befehlszeilenoptionen
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Trident stellt mehrere Befehlszeilenoptionen für den Trident -Orchestrator bereit.  Sie können diese Optionen nutzen, um Ihre Bereitstellung anzupassen.
+
+
+
+== Protokollierung
+
+`-debug`:: Aktiviert die Debug-Ausgabe.
+`-loglevel <level>`:: Legt den Protokollierungsgrad fest (debug, info, warn, error, fatal).  Standardmäßig wird die Info-Seite angezeigt.
+
+
+
+
+== Kubernetes
+
+`-k8s_pod`:: Nutzen Sie diese Option oder `-k8s_api_server` um die Kubernetes-Unterstützung zu aktivieren.  Durch diese Einstellung verwendet Trident die Anmeldeinformationen des Kubernetes-Dienstkontos des übergeordneten Pods, um den API-Server zu kontaktieren.  Dies funktioniert nur, wenn Trident als Pod in einem Kubernetes-Cluster mit aktivierten Service Accounts ausgeführt wird.
+`-k8s_api_server <insecure-address:insecure-port>`:: Nutzen Sie diese Option oder `-k8s_pod` um die Kubernetes-Unterstützung zu aktivieren.  Wenn angegeben, stellt Trident über die bereitgestellte unsichere Adresse und den Port eine Verbindung zum Kubernetes-API-Server her.  Dies ermöglicht den Einsatz von Trident außerhalb eines Pods; allerdings werden dabei nur unsichere Verbindungen zum API-Server unterstützt.  Um eine sichere Verbindung herzustellen, stellen Sie Trident in einem Pod mit dem bereit. `-k8s_pod` Option.
+
+
+
+
+== Docker
+
+`-volume_driver <name>`:: Name des Treibers, der bei der Registrierung des Docker-Plugins verwendet wird.  Standardmäßig `netapp` .
+`-driver_port <port-number>`:: Lauschen Sie an diesem Port anstatt an einem UNIX-Domain-Socket.
+`-config <file>`:: Erforderlich; Sie müssen diesen Pfad zu einer Backend-Konfigurationsdatei angeben.
+
+
+
+
+== AUSRUHEN
+
+`-address <ip-or-host>`:: Gibt die Adresse an, an der der REST-Server von Trident lauschen soll.  Standardmäßig wird localhost verwendet.  Beim Lauschen auf localhost und Ausführen innerhalb eines Kubernetes-Pods ist die REST-Schnittstelle von außerhalb des Pods nicht direkt zugänglich.  Verwenden `-address ""` um die REST-Schnittstelle von der Pod-IP-Adresse aus zugänglich zu machen.
++
+--
+
+CAUTION: Die Trident REST-Schnittstelle kann so konfiguriert werden, dass sie nur unter 127.0.0.1 (für IPv4) oder [::1] (für IPv6) lauscht und Anfragen beantwortet.
+
+--
+`-port <port-number>`:: Gibt den Port an, an dem der REST-Server von Trident lauschen soll.  Standardwert ist 8000.
+`-rest`:: Aktiviert die REST-Schnittstelle.  Standardmäßig auf „true“ gesetzt.
+

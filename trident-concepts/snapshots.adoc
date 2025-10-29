@@ -1,0 +1,28 @@
+---
+sidebar: sidebar 
+permalink: trident-concepts/snapshots.html 
+keywords: provisioning, Trident 
+summary: Erfahren Sie mehr darüber, wie Trident die Erstellung von Volume-Snapshots für seine Treiber handhabt. 
+---
+= Volumen-Snapshots
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Erfahren Sie mehr darüber, wie Trident die Erstellung von Volume-Snapshots für seine Treiber handhabt.
+
+
+
+== Erfahren Sie mehr über die Erstellung von Volume-Snapshots.
+
+* Für die `ontap-nas` , `ontap-san` , `gcp-cvs` , Und `azure-netapp-files` Treiber, jedes Persistent Volume (PV) wird einem FlexVol volume zugeordnet. Dadurch werden Volume-Snapshots als NetApp Snapshots erstellt.  Die Snapshot-Technologie von NetApp bietet mehr Stabilität, Skalierbarkeit, Wiederherstellbarkeit und Leistung als konkurrierende Snapshot-Technologien.  Diese Snapshot-Kopien sind sowohl hinsichtlich der Erstellungszeit als auch des Speicherplatzes äußerst effizient.
+* Für die `ontap-nas-flexgroup` Jeder Persistent Volume (PV) wird vom Treiber einer FlexGroup zugeordnet.  Daher werden Volume-Snapshots als NetApp FlexGroup Snapshots erstellt.  Die Snapshot-Technologie von NetApp bietet mehr Stabilität, Skalierbarkeit, Wiederherstellbarkeit und Leistung als konkurrierende Snapshot-Technologien.  Diese Snapshot-Kopien sind sowohl hinsichtlich der Erstellungszeit als auch des Speicherplatzes äußerst effizient.
+* Für die `ontap-san-economy` Treiber, PVs werden LUNs zugeordnet, die auf gemeinsam genutzten FlexVol -Volumes erstellt wurden. VolumeSnapshots von PVs werden durch die Durchführung von FlexClones der zugehörigen LUN erreicht.  Die ONTAP FlexClone -Technologie ermöglicht es, Kopien selbst größter Datensätze nahezu augenblicklich zu erstellen.  Kopien teilen sich Datenblöcke mit ihren Elternkopien und verbrauchen dabei keinen Speicherplatz außer dem für Metadaten erforderlichen.
+* Für die `solidfire-san` Der Treiber ordnet jedem PV eine LUN zu, die auf der NetApp Element Software/ dem NetApp HCI Cluster erstellt wurde.  VolumeSnapshots werden durch Element-Snapshots der zugrunde liegenden LUN dargestellt.  Diese Momentaufnahmen sind Momentaufnahmen und beanspruchen nur wenig Systemressourcen und Speicherplatz.
+* Bei der Arbeit mit dem `ontap-nas` Und `ontap-san` Treiber, ONTAP Snapshots sind Momentaufnahmen des FlexVol und belegen Speicherplatz auf dem FlexVol selbst.  Dies kann dazu führen, dass sich der beschreibbare Speicherplatz im Volume mit der Zeit verringert, da Snapshots erstellt/geplant werden.  Eine einfache Möglichkeit, dieses Problem zu lösen, besteht darin, das Volumen durch Größenänderung über Kubernetes zu vergrößern.  Eine weitere Möglichkeit besteht darin, nicht mehr benötigte Snapshots zu löschen.  Wenn ein über Kubernetes erstellter VolumeSnapshot gelöscht wird, löscht Trident den zugehörigen ONTAP Snapshot.  Auch ONTAP Snapshots, die nicht über Kubernetes erstellt wurden, können gelöscht werden.
+
+
+Mit Trident können Sie VolumeSnapshots verwenden, um daraus neue PVs zu erstellen.  Die Erstellung von PVs aus diesen Snapshots erfolgt mithilfe der FlexClone -Technologie für unterstützte ONTAP und CVS-Backends.  Beim Erstellen eines PV aus einem Snapshot ist das zugrundeliegende Volume ein FlexClone des übergeordneten Volumes des Snapshots.  Der `solidfire-san` Der Treiber verwendet Element Software-Volume-Klone, um PVs aus Snapshots zu erstellen.  Hier wird ein Klon aus dem Element-Snapshot erstellt.

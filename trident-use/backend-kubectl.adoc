@@ -1,0 +1,304 @@
+---
+sidebar: sidebar 
+permalink: trident-use/backend-kubectl.html 
+keywords: backends, storage system, anf, cvs for gcp, element, hci, solidfire, ontap, aff, fas, ontap select, configure backends, kubectl, create backends 
+summary: 'Ein Backend definiert die Beziehung zwischen Trident und einem Speichersystem.  Es teilt Trident mit, wie mit diesem Speichersystem kommuniziert werden soll und wie Trident Datenträger daraus bereitstellen soll.  Nach der Installation von Trident besteht der nächste Schritt darin, ein Backend zu erstellen.  Der `TridentBackendConfig` Mit Custom Resource Definition (CRD) können Sie Trident -Backends direkt über die Kubernetes-Schnittstelle erstellen und verwalten.  Dies können Sie tun, indem Sie `kubectl` oder das entsprechende CLI-Tool für Ihre Kubernetes-Distribution.' 
+---
+= Backends mit kubectl erstellen
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Ein Backend definiert die Beziehung zwischen Trident und einem Speichersystem.  Es teilt Trident mit, wie mit diesem Speichersystem kommuniziert werden soll und wie Trident Datenträger daraus bereitstellen soll.  Nach der Installation von Trident besteht der nächste Schritt darin, ein Backend zu erstellen.  Der `TridentBackendConfig` Mit Custom Resource Definition (CRD) können Sie Trident -Backends direkt über die Kubernetes-Schnittstelle erstellen und verwalten.  Dies können Sie tun, indem Sie `kubectl` oder das entsprechende CLI-Tool für Ihre Kubernetes-Distribution.
+
+
+
+== `TridentBackendConfig`
+
+`TridentBackendConfig` (`tbc`, `tbconfig` , `tbackendconfig` ) ist ein Frontend mit Namensräumen, das es Ihnen ermöglicht, Trident -Backends zu verwalten. `kubectl` .  Kubernetes- und Speicheradministratoren können Backends jetzt direkt über die Kubernetes-CLI erstellen und verwalten, ohne dass ein separates Befehlszeilenprogramm erforderlich ist.(`tridentctl` ).
+
+Bei der Schaffung eines `TridentBackendConfig` Wenn man sich das Objekt ansieht, geschieht Folgendes:
+
+* Ein Backend wird von Trident automatisch auf Basis der von Ihnen bereitgestellten Konfiguration erstellt.  Dies wird intern dargestellt als `TridentBackend` (`tbe` , `tridentbackend` ) CR.
+* Der `TridentBackendConfig` ist auf einzigartige Weise an ein `TridentBackend` Das wurde von Trident entwickelt.
+
+
+Jede `TridentBackendConfig` pflegt eine Eins-zu-Eins-Zuordnung mit einem `TridentBackend` Ersteres ist die dem Benutzer zur Verfügung gestellte Schnittstelle zum Entwerfen und Konfigurieren von Backends; letzteres ist die Art und Weise, wie Trident das eigentliche Backend-Objekt darstellt.
+
+
+WARNING: `TridentBackend`CRs werden von Trident automatisch erstellt.  Sie *sollten* sie nicht verändern.  Wenn Sie Aktualisierungen an den Backends vornehmen möchten, tun Sie dies durch Ändern der `TridentBackendConfig` Objekt.
+
+Das folgende Beispiel zeigt das Format des `TridentBackendConfig` CR:
+
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-ontap-san
+spec:
+  version: 1
+  backendName: ontap-san-backend
+  storageDriverName: ontap-san
+  managementLIF: 10.0.0.1
+  dataLIF: 10.0.0.2
+  svm: trident_svm
+  credentials:
+    name: backend-tbc-ontap-san-secret
+----
+Sie können sich auch die Beispiele in der https://github.com/NetApp/trident/tree/stable/v21.07/trident-installer/sample-input/backends-samples["Dreizack-Installateur"^] Verzeichnis mit Beispielkonfigurationen für die gewünschte Speicherplattform/den gewünschten Speicherdienst.
+
+Der `spec` benötigt backendspezifische Konfigurationsparameter.  In diesem Beispiel verwendet das Backend die `ontap-san` Der Speichertreiber verwendet die hier tabellarisch aufgeführten Konfigurationsparameter.  Eine Liste der Konfigurationsoptionen für Ihren gewünschten Speichertreiber finden Sie unterlink:backends.html["Backend-Konfigurationsinformationen für Ihren Speichertreiber"^] .
+
+Der `spec` Dieser Abschnitt umfasst auch `credentials` Und `deletionPolicy` Felder, die neu eingeführt wurden in der `TridentBackendConfig` CR:
+
+* `credentials`Dieser Parameter ist ein Pflichtfeld und enthält die Anmeldeinformationen, die zur Authentifizierung beim Speichersystem/-dienst verwendet werden.  Dies ist auf ein vom Benutzer erstelltes Kubernetes-Secret eingestellt.  Die Zugangsdaten dürfen nicht im Klartext übermittelt werden und führen zu einem Fehler.
+* `deletionPolicy`Dieses Feld definiert, was geschehen soll, wenn `TridentBackendConfig` wird gelöscht.  Es kann einen von zwei möglichen Werten annehmen:
++
+** `delete`Dies führt zur Löschung beider `TridentBackendConfig` CR und das zugehörige Backend.  Dies ist der Standardwert.
+**  `retain`Wenn ein `TridentBackendConfig` Wenn CR gelöscht wird, bleibt die Backend-Definition weiterhin vorhanden und kann verwaltet werden mit `tridentctl` .  Die Löschrichtlinie festlegen `retain` Ermöglicht es Benutzern, auf eine frühere Version (vor 21.04) zurückzustufen und die erstellten Backends beizubehalten.  Der Wert dieses Feldes kann nach einem `TridentBackendConfig` wird erstellt.
+
+
+
+
+
+NOTE: Der Name eines Backends wird wie folgt festgelegt: `spec.backendName` .  Wenn kein Name angegeben ist, wird der Name des Backends auf den Namen des Backends gesetzt. `TridentBackendConfig` Objekt (metadata.name).  Es wird empfohlen, Backend-Namen explizit festzulegen. `spec.backendName` .
+
+
+TIP: Backends, die mit `tridentctl` haben keine zugehörige `TridentBackendConfig` Objekt.  Sie können diese Backends mit folgender Funktion verwalten: `kubectl` durch die Erstellung eines `TridentBackendConfig` CR.  Es ist darauf zu achten, dass identische Konfigurationsparameter angegeben werden (wie z. B. `spec.backendName` , `spec.storagePrefix` , `spec.storageDriverName` , und so weiter).  Trident wird das neu erstellte automatisch binden. `TridentBackendConfig` mit dem bereits bestehenden Backend.
+
+
+
+== Schrittübersicht
+
+Um ein neues Backend zu erstellen, indem man `kubectl` Sie sollten Folgendes tun:
+
+. Erstellen Sie ein https://kubernetes.io/docs/concepts/configuration/secret/["Kubernetes-Geheimnis"^] Das Geheimnis enthält die Anmeldeinformationen, die Trident für die Kommunikation mit dem Speichercluster/-dienst benötigt.
+. Erstellen Sie ein `TridentBackendConfig` Objekt.  Dieser Eintrag enthält spezifische Informationen zum Speichercluster/Speicherdienst und verweist auf das im vorherigen Schritt erstellte Geheimnis.
+
+
+Nachdem Sie ein Backend erstellt haben, können Sie dessen Status mithilfe von [Name des Dienstes/der Funktion] beobachten. `kubectl get tbc <tbc-name> -n <trident-namespace>` und weitere Details einholen.
+
+
+
+== Schritt 1: Erstellen Sie ein Kubernetes-Secret.
+
+Erstellen Sie ein Geheimnis, das die Zugangsdaten für das Backend enthält.  Dies ist für jeden Speicherdienst bzw. jede Speicherplattform individuell. Hier ist ein Beispiel:
+
+[listing]
+----
+kubectl -n trident create -f backend-tbc-ontap-san-secret.yaml
+----
+[source, yaml]
+----
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-tbc-ontap-san-secret
+type: Opaque
+stringData:
+  username: cluster-admin
+  password: password
+----
+Diese Tabelle fasst die Felder zusammen, die für jede Speicherplattform im Secret enthalten sein müssen:
+
+[cols="3"]
+|===
+| Beschreibung der geheimen Felder der Speicherplattform | Geheimnis | Feldbeschreibung 
+
+
+| Azure NetApp Files  a| 
+Client-ID
+ a| 
+Die Client-ID aus einer App-Registrierung
+
+
+
+| Cloud Volumes Service für GCP  a| 
+private_key_id
+ a| 
+ID des privaten Schlüssels.  Teil des API-Schlüssels für ein GCP-Dienstkonto mit CVS-Administratorrolle
+
+
+
+| Cloud Volumes Service für GCP  a| 
+privater_key
+ a| 
+Privater Schlüssel.  Teil des API-Schlüssels für ein GCP-Dienstkonto mit CVS-Administratorrolle
+
+
+
+| Element (NetApp HCI/ SolidFire)  a| 
+Endpunkt
+ a| 
+MVIP für den SolidFire -Cluster mit Mandantenanmeldeinformationen
+
+
+
+| ONTAP  a| 
+Benutzername
+ a| 
+Benutzername für die Verbindung mit dem Cluster/SVM. Wird für die anmeldeinformationsbasierte Authentifizierung verwendet
+
+
+
+| ONTAP  a| 
+Passwort
+ a| 
+Kennwort für die Verbindung mit dem Cluster/SVM. Wird für die anmeldeinformationsbasierte Authentifizierung verwendet
+
+
+
+| ONTAP  a| 
+Client-Privatschlüssel
+ a| 
+Base64-kodierter Wert des privaten Client-Schlüssels.  Wird für die zertifikatsbasierte Authentifizierung verwendet
+
+
+
+| ONTAP  a| 
+chapUsername
+ a| 
+Eingehender Benutzername.  Erforderlich, wenn useCHAP=true.  Für `ontap-san` Und `ontap-san-economy`
+
+
+
+| ONTAP  a| 
+KapitelInitiatorGeheimnis
+ a| 
+Geheimnis des CHAP-Initiators.  Erforderlich, wenn useCHAP=true.  Für `ontap-san` Und `ontap-san-economy`
+
+
+
+| ONTAP  a| 
+chapTargetUsername
+ a| 
+Zielbenutzername.  Erforderlich, wenn useCHAP=true.  Für `ontap-san` Und `ontap-san-economy`
+
+
+
+| ONTAP  a| 
+Kapitel „Zielinitiatorgeheimnis“
+ a| 
+Geheimnis des CHAP-Zielinitiators.  Erforderlich, wenn useCHAP=true.  Für `ontap-san` Und `ontap-san-economy`
+
+|===
+Das in diesem Schritt erstellte Geheimnis wird in der `spec.credentials` Feld des `TridentBackendConfig` Objekt, das im nächsten Schritt erstellt wird.
+
+
+
+== Schritt 2: Erstellen Sie die `TridentBackendConfig` CR
+
+Sie können nun Ihre eigene erstellen. `TridentBackendConfig` CR.  In diesem Beispiel verwendet ein Backend die `ontap-san` Der Treiber wird mithilfe des `TridentBackendConfig` Das unten abgebildete Objekt:
+
+[listing]
+----
+kubectl -n trident create -f backend-tbc-ontap-san.yaml
+----
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-ontap-san
+spec:
+  version: 1
+  backendName: ontap-san-backend
+  storageDriverName: ontap-san
+  managementLIF: 10.0.0.1
+  dataLIF: 10.0.0.2
+  svm: trident_svm
+  credentials:
+    name: backend-tbc-ontap-san-secret
+----
+
+
+== Schritt 3: Überprüfen Sie den Status des `TridentBackendConfig` CR
+
+Nachdem Sie nun die `TridentBackendConfig` CR, Sie können den Status überprüfen. Siehe das folgende Beispiel:
+
+[listing]
+----
+kubectl -n trident get tbc backend-tbc-ontap-san
+NAME                    BACKEND NAME          BACKEND UUID                           PHASE   STATUS
+backend-tbc-ontap-san   ontap-san-backend     8d24fce7-6f60-4d4a-8ef6-bab2699e6ab8   Bound   Success
+----
+Es wurde erfolgreich ein Backend erstellt und angebunden. `TridentBackendConfig` CR.
+
+Die Phase kann einen der folgenden Werte annehmen:
+
+* `Bound`: Der `TridentBackendConfig` CR ist mit einem Backend verknüpft, und dieses Backend enthält `configRef` auf die `TridentBackendConfig` CR's uid.
+* `Unbound`: Dargestellt durch `""` .  Der `TridentBackendConfig` Das Objekt ist nicht an ein Backend gebunden.  Alle neu erstellt `TridentBackendConfig` CRs befinden sich standardmäßig in dieser Phase.  Nach den Phasenübergängen kann der Zustand „Ungebunden“ nicht mehr rückgängig gemacht werden.
+* `Deleting`: Der `TridentBackendConfig` CRs `deletionPolicy` wurde zum Löschen ausgewählt.  Wenn die `TridentBackendConfig` Wenn CR gelöscht wird, wechselt es in den Status „Wird gelöscht“.
++
+** Wenn im Backend keine persistenten Volumenansprüche (PVCs) vorhanden sind, wird deren gelöscht. `TridentBackendConfig` wird dazu führen, dass Trident sowohl das Backend als auch das `TridentBackendConfig` CR.
+** Wenn im Backend ein oder mehrere PVCs vorhanden sind, wechselt das System in den Löschzustand.  Der `TridentBackendConfig` Anschließend tritt CR auch in die Löschphase ein.  Das Backend und `TridentBackendConfig` werden erst gelöscht, nachdem alle PVCs gelöscht wurden.
+
+
+* `Lost`: Das zugehörige Backend `TridentBackendConfig` CR wurde versehentlich oder absichtlich gelöscht und die `TridentBackendConfig` CR enthält noch einen Verweis auf das gelöschte Backend.  Der `TridentBackendConfig` CR kann unabhängig davon weiterhin gelöscht werden. `deletionPolicy` Wert.
+* `Unknown`Trident kann den Status oder die Existenz des zugehörigen Backends nicht feststellen. `TridentBackendConfig` CR.  Wenn beispielsweise der API-Server nicht antwortet oder wenn der `tridentbackends.trident.netapp.io` CRD fehlt.  Dies könnte ein Eingreifen erfordern.
+
+
+In diesem Stadium ist das Backend erfolgreich erstellt worden!  Es gibt mehrere weitere Vorgänge, die zusätzlich durchgeführt werden können, wie zum Beispiellink:backend_ops_kubectl.html["Backend-Aktualisierungen und Backend-Löschungen"^] .
+
+
+
+== (Optional) Schritt 4: Weitere Details einholen.
+
+Sie können den folgenden Befehl ausführen, um weitere Informationen über Ihr Backend zu erhalten:
+
+[listing]
+----
+kubectl -n trident get tbc backend-tbc-ontap-san -o wide
+----
+[listing]
+----
+NAME                    BACKEND NAME        BACKEND UUID                           PHASE   STATUS    STORAGE DRIVER   DELETION POLICY
+backend-tbc-ontap-san   ontap-san-backend   8d24fce7-6f60-4d4a-8ef6-bab2699e6ab8   Bound   Success   ontap-san        delete
+----
+Darüber hinaus können Sie auch einen YAML/JSON-Dump erhalten von `TridentBackendConfig` .
+
+[listing]
+----
+kubectl -n trident get tbc backend-tbc-ontap-san -o yaml
+----
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  creationTimestamp: 2021-04-21T20:45:11Z
+  finalizers:
+    - trident.netapp.io
+  generation: 1
+  name: backend-tbc-ontap-san
+  namespace: trident
+  resourceVersion: "947143"
+  uid: 35b9d777-109f-43d5-8077-c74a4559d09c
+spec:
+  backendName: ontap-san-backend
+  credentials:
+    name: backend-tbc-ontap-san-secret
+  managementLIF: 10.0.0.1
+  dataLIF: 10.0.0.2
+  storageDriverName: ontap-san
+  svm: trident_svm
+  version: 1
+status:
+  backendInfo:
+    backendName: ontap-san-backend
+    backendUUID: 8d24fce7-6f60-4d4a-8ef6-bab2699e6ab8
+  deletionPolicy: delete
+  lastOperationStatus: Success
+  message: Backend 'ontap-san-backend' created
+  phase: Bound
+----
+`backendInfo`enthält `backendName` und die `backendUUID` des Backends, das als Reaktion auf die `TridentBackendConfig` CR.  Der `lastOperationStatus` Das Feld repräsentiert den Status der letzten Operation des `TridentBackendConfig` CR, die durch einen Benutzer ausgelöst werden kann (z. B. wenn ein Benutzer etwas geändert hat in `spec` oder ausgelöst durch Trident (zum Beispiel während eines Trident -Neustarts).  Es kann entweder ein Erfolg oder ein Misserfolg sein. `phase` stellt den Status der Beziehung zwischen den dar `TridentBackendConfig` CR und das Backend.  Im obigen Beispiel `phase` hat den Wert „Gebunden“, was bedeutet, dass `TridentBackendConfig` CR ist mit dem Backend verbunden.
+
+Sie können die `kubectl -n trident describe tbc <tbc-cr-name>` Befehl zum Abrufen von Details zu den Ereignisprotokollen.
+
+
+WARNING: Ein Backend, das ein zugehöriges Backend enthält, kann nicht aktualisiert oder gelöscht werden. `TridentBackendConfig` Objekt verwenden `tridentctl` .  Um die einzelnen Schritte beim Wechsel zwischen `tridentctl` Und `TridentBackendConfig` ,link:backend_options.html["siehe hier"^] .

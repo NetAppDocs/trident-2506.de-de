@@ -1,0 +1,175 @@
+---
+sidebar: sidebar 
+permalink: trident-use/vol-group-snapshots.html 
+keywords: volumes, on-demand volume group snapshots, csi, csi snapshots, create snapshots, backends, kubernetes, create PVCs, PVCs, snapshot, volume snapshot, import snapshot, recover data 
+summary: 'Kubernetes-Volume-Snapshots von Persistent Volumes (PVs) ermöglichen die Erstellung von zeitpunktbezogenen Kopien von Volumes.  Sie können einen Snapshot eines mit Trident erstellten Volumes erstellen, einen außerhalb von Trident erstellten Snapshot importieren, ein neues Volume aus einem vorhandenen Snapshot erstellen und Volume-Daten aus Snapshots wiederherstellen.' 
+---
+= Arbeiten mit Volumengruppen-Snapshots
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Kubernetes-Volume-Gruppen-Snapshots von Persistent Volumes (PVs) NetApp Trident bietet die Möglichkeit, Snapshots mehrerer Volumes (eine Gruppe von Volume-Snapshots) zu erstellen.  Dieser Snapshot einer Volumengruppe stellt Kopien von mehreren Volumen dar, die zum gleichen Zeitpunkt erstellt wurden.
+
+
+NOTE: VolumeGroupSnapshot ist eine Beta-Funktion in Kubernetes mit Beta-APIs.  Für VolumeGroupSnapshot ist mindestens die Version Kubernetes 1.32 erforderlich.
+
+
+
+== Erstellen von Snapshots von Volumengruppen
+
+Die Snapshot-Funktion für Volumengruppen wird unterstützt. `ontap-san` Treiber nur für das iSCSI-Protokoll, noch nicht unterstützt mit Fibre Channel (FCP) oder NVMe/TCP.  Bevor Sie beginnen
+
+* Stellen Sie sicher, dass Ihre Kubernetes-Version K8s 1.32 oder höher ist.
+* Sie benötigen einen externen Snapshot-Controller und benutzerdefinierte Ressourcendefinitionen (CRDs), um mit Snapshots arbeiten zu können.  Dies fällt in den Verantwortungsbereich des Kubernetes-Orchestrators (z. B. Kubeadm, GKE, OpenShift).
++
+Falls Ihre Kubernetes-Distribution den externen Snapshot-Controller und die CRDs nicht enthält, lesen Sie bitte weiter unter<<Einen Volume-Snapshot-Controller bereitstellen>> .
+
++
+
+NOTE: Erstellen Sie keinen Snapshot-Controller, wenn Sie in einer GKE-Umgebung bedarfsgesteuerte Volume-Group-Snapshots erstellen.  GKE verwendet einen integrierten, versteckten Snapshot-Controller.
+
+* Im Snapshot-Controller-YAML legen Sie Folgendes fest: `CSIVolumeGroupSnapshot` Feature-Gate auf „true“ setzen, um sicherzustellen, dass die Snapshot-Funktion für Volumengruppen aktiviert ist.
+* Erstellen Sie die erforderlichen Volume-Group-Snapshot-Klassen, bevor Sie einen Volume-Group-Snapshot erstellen.
+* Stellen Sie sicher, dass sich alle PVCs/Volumes auf derselben SVM befinden, um VolumeGroupSnapshot erstellen zu können.
+
+
+.Schritte
+* Erstellen Sie eine VolumeGroupSnapshotClass, bevor Sie einen VolumeGroupSnapshot erstellen.  Weitere Informationen finden Sie unterlink:../trident-reference/objects.html#kubernetes-volumegroupsnapshotclass-objects["VolumeGroupSnapshotClass"] .
++
+[source, yaml]
+----
+apiVersion: groupsnapshot.storage.k8s.io/v1beta1
+kind: VolumeGroupSnapshotClass
+metadata:
+  name: csi-group-snap-class
+  annotations:
+    kubernetes.io/description: "Trident group snapshot class"
+driver: csi.trident.netapp.io
+deletionPolicy: Delete
+----
+* Erstellen Sie PVCs mit den erforderlichen Etiketten unter Verwendung vorhandener Speicherklassen oder fügen Sie diese Etiketten zu vorhandenen PVCs hinzu.
++
+Das folgende Beispiel erstellt die PVC-Datei mithilfe von `pvc1-group-snap` als Datenquelle und Bezeichnung `consistentGroupSnapshot: groupA` .  Definieren Sie den Label-Schlüssel und den Wert entsprechend Ihren Anforderungen.
+
+
+
+[listing]
+----
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc1-group-snap
+  labels:
+    consistentGroupSnapshot: groupA
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+  storageClassName: sc1-1
+----
+* Erstellen Sie einen VolumeGroupSnapshot mit derselben Bezeichnung(`consistentGroupSnapshot: groupA` ) im PVC spezifiziert.
++
+Dieses Beispiel erstellt einen Snapshot einer Volumengruppe:
+
+
+
+[listing]
+----
+apiVersion: groupsnapshot.storage.k8s.io/v1beta1
+kind: VolumeGroupSnapshot
+metadata:
+  name: "vgs1"
+  namespace: trident
+spec:
+  volumeGroupSnapshotClassName: csi-group-snap-class
+  source:
+    selector:
+      matchLabels:
+        consistentGroupSnapshot: groupA
+----
+
+
+== Wiederherstellung von Volumendaten mithilfe eines Gruppen-Snapshots
+
+Einzelne persistente Volumes können mithilfe der einzelnen Snapshots wiederhergestellt werden, die im Rahmen des Volume Group Snapshots erstellt wurden.  Der Volume-Gruppen-Snapshot kann nicht als Einheit wiederhergestellt werden.
+
+Verwenden Sie den Befehl „volume snapshot restore ONTAP CLI“, um ein Volume auf einen Zustand zurückzusetzen, der in einem vorherigen Snapshot aufgezeichnet wurde.
+
+[listing]
+----
+cluster1::*> volume snapshot restore -vserver vs0 -volume vol3 -snapshot vol3_snap_archive
+----
+
+NOTE: Beim Wiederherstellen einer Snapshot-Kopie wird die bestehende Volume-Konfiguration überschrieben.  Änderungen, die an den Volumendaten vorgenommen wurden, nachdem die Snapshot-Kopie erstellt wurde, gehen verloren.
+
+
+
+== Wiederherstellung des Volumens direkt aus einem Snapshot
+
+Trident ermöglicht die schnelle, direkte Wiederherstellung des Volumens aus einer Momentaufnahme mithilfe der `TridentActionSnapshotRestore` (TASR) CR.  Diese CR fungiert als imperative Kubernetes-Aktion und bleibt nach Abschluss der Operation nicht erhalten.
+
+Weitere Informationen finden Sie unter link:../trident-use/vol-snapshots.html#in-place-volume-restoration-from-a-snapshot["Wiederherstellung des Volumens direkt aus einem Snapshot"].
+
+
+
+== Löschen eines PV mit zugehörigen Gruppen-Snapshots
+
+Beim Löschen eines Gruppenvolume-Snapshots:
+
+* Sie können VolumeGroupSnapshots als Ganzes löschen, nicht einzelne Snapshots innerhalb der Gruppe.
+* Wenn PersistentVolumes gelöscht werden, während für dieses PersistentVolume ein Snapshot existiert, versetzt Trident dieses Volume in den Status "wird gelöscht", da der Snapshot entfernt werden muss, bevor das Volume sicher gelöscht werden kann.
+* Wenn ein Klon mithilfe eines gruppierten Snapshots erstellt wurde und die Gruppe anschließend gelöscht werden soll, wird ein Split-on-Clone-Vorgang gestartet, und die Gruppe kann erst gelöscht werden, wenn der Split abgeschlossen ist.
+
+
+
+
+== Einen Volume-Snapshot-Controller bereitstellen
+
+Falls Ihre Kubernetes-Distribution den Snapshot-Controller und die CRDs nicht enthält, können Sie diese wie folgt bereitstellen.
+
+.Schritte
+. Erstellen Sie Volume-Snapshot-CRDs.
++
+[listing]
+----
+cat snapshot-setup.sh
+----
++
+[source, sh]
+----
+#!/bin/bash
+# Create volume snapshot CRDs
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-8.2/client/config/crd/groupsnapshot.storage.k8s.io_volumegroupsnapshotclasses.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-8.2/client/config/crd/groupsnapshot.storage.k8s.io_volumegroupsnapshotcontents.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-8.2/client/config/crd/groupsnapshot.storage.k8s.io_volumegroupsnapshots.yaml
+----
+. Erstellen Sie den Snapshot-Controller.
++
+[source, console]
+----
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-8.2/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+----
++
+[source, console]
+----
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-8.2/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+----
++
+
+NOTE: Öffnen Sie gegebenenfalls `deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml` und aktualisieren `namespace` zu Ihrem Namensraum.
+
+
+
+
+
+== Weiterführende Links
+
+* link:../trident-reference/objects.html#kubernetes-volumegroupsnapshotclass-objects["VolumeGroupSnapshotClass"]
+* link:../trident-concepts/snapshots.html["Volumen-Snapshots"]
+

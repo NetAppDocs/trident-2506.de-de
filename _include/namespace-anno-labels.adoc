@@ -1,0 +1,86 @@
+= Namespace-Annotationen und -Bezeichnungen während Wiederherstellungs- und Failover-Operationen
+:allow-uri-read: 
+
+
+
+
+== Namespace-Annotationen und -Bezeichnungen während Wiederherstellungs- und Failover-Operationen
+
+Bei Wiederherstellungs- und Failover-Vorgängen werden die Bezeichnungen und Annotationen im Ziel-Namensraum so angepasst, dass sie mit den Bezeichnungen und Annotationen im Quell-Namensraum übereinstimmen.  Es werden Bezeichnungen oder Annotationen aus dem Quell-Namensraum hinzugefügt, die im Ziel-Namensraum nicht existieren, und alle bereits vorhandenen Bezeichnungen oder Annotationen werden überschrieben, um dem Wert aus dem Quell-Namensraum zu entsprechen.  Labels oder Annotationen, die nur im Ziel-Namensraum existieren, bleiben unverändert.
+
+
+NOTE: Wenn Sie Red Hat OpenShift verwenden, ist es wichtig, die entscheidende Rolle von Namespace-Annotationen in OpenShift-Umgebungen zu beachten. Namespace-Anmerkungen stellen sicher, dass wiederhergestellte Pods die entsprechenden Berechtigungen und Sicherheitskonfigurationen einhalten, die durch die OpenShift-Sicherheitskontextbeschränkungen (SCCs) definiert sind, und ohne Berechtigungsprobleme auf Volumes zugreifen können. Weitere Informationen finden Sie unter https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/authentication_and_authorization/managing-pod-security-policies["Dokumentation zu den Sicherheitskontextbeschränkungen von OpenShift"^] .
+
+Sie können verhindern, dass bestimmte Annotationen im Ziel-Namespace überschrieben werden, indem Sie die Kubernetes-Umgebungsvariable festlegen. `RESTORE_SKIP_NAMESPACE_ANNOTATIONS` bevor Sie die Wiederherstellungs- oder Failover-Operation durchführen. Beispiel:
+
+[source, console]
+----
+helm upgrade trident-protect --set restoreSkipNamespaceAnnotations=<annotation_key_to_skip_1>,<annotation_key_to_skip_2> --reuse-values
+----
+
+NOTE: Bei der Durchführung einer Wiederherstellungs- oder Failover-Operation werden alle in angegebenen Namespace-Annotationen und -Labels berücksichtigt. `restoreSkipNamespaceAnnotations` Und `restoreSkipNamespaceLabels` sind von der Wiederherstellungs- oder Failover-Operation ausgeschlossen. Stellen Sie sicher, dass diese Einstellungen während der ersten Helm-Installation konfiguriert werden. Weitere Informationen finden Sie unter link:../trident-protect/trident-protect-customize-installation.html#configure-autoSupport-and-namespace-filtering-options["Konfigurieren Sie AutoSupport und Namespace-Filteroptionen"].
+
+Wenn Sie die Quellanwendung mit Helm installiert haben `--create-namespace` Flagge, besondere Behandlung wird der `name` Legende mit Beschriftung.  Während des Wiederherstellungs- oder Failover-Prozesses kopiert Trident Protect diese Bezeichnung in den Ziel-Namespace, aktualisiert aber den Wert auf den Wert des Ziel-Namespace, wenn der Wert aus der Quelle mit dem Quell-Namespace übereinstimmt.  Stimmt dieser Wert nicht mit dem Quell-Namespace überein, wird er unverändert in den Ziel-Namespace kopiert.
+
+
+
+=== Beispiel
+
+Das folgende Beispiel zeigt einen Quell- und einen Ziel-Namensraum, die jeweils unterschiedliche Annotationen und Bezeichnungen aufweisen.  Sie können den Zustand des Ziel-Namensraums vor und nach der Operation einsehen und erkennen, wie die Annotationen und Labels im Ziel-Namensraum kombiniert oder überschrieben werden.
+
+
+
+==== Vor dem Wiederherstellungs- oder Failover-Vorgang
+
+Die folgende Tabelle veranschaulicht den Zustand der Beispiel-Quell- und Ziel-Namespaces vor der Wiederherstellungs- oder Failover-Operation:
+
+[cols="1,2a,2a"]
+|===
+| Namensraum | Anmerkungen | Labels 
+
+
+| Namespace ns-1 (Quelle)  a| 
+* annotation.one/key: "updatedvalue"
+* annotation.two/key: "true"
+
+ a| 
+* Umgebung=Produktion
+* Compliance=HIPAA
+* Name=ns-1
+
+
+
+
+| Namespace ns-2 (Ziel)  a| 
+* annotation.one/key: "true"
+* annotation.three/key: "false"
+
+ a| 
+* Rolle=Datenbank
+
+
+|===
+
+
+==== Nach dem Wiederherstellungsvorgang
+
+Die folgende Tabelle veranschaulicht den Zustand des Beispiel-Ziel-Namespace nach der Wiederherstellungs- oder Failover-Operation.  Einige Schlüssel wurden hinzugefügt, einige wurden überschrieben, und die `name` Die Bezeichnung wurde aktualisiert, um dem Ziel-Namespace zu entsprechen:
+
+[cols="1,2a,2a"]
+|===
+| Namensraum | Anmerkungen | Labels 
+
+
+| Namespace ns-2 (Ziel)  a| 
+* annotation.one/key: "updatedvalue"
+* annotation.two/key: "true"
+* annotation.three/key: "false"
+
+ a| 
+* Name=ns-2
+* Compliance=HIPAA
+* Umgebung=Produktion
+* Rolle=Datenbank
+
+
+|===

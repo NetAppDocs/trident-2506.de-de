@@ -1,0 +1,40 @@
+---
+sidebar: sidebar 
+permalink: trident-reference/ports.html 
+keywords: Trident, port, ports 
+summary: Erfahren Sie mehr über die Ports, über die Trident kommuniziert. 
+---
+= Trident Häfen
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Erfahren Sie mehr über die Anschlüsse, die Trident zur Kommunikation nutzt.
+
+
+
+== Trident Häfen
+
+Trident verwendet die folgenden Ports für die Kommunikation innerhalb von Kubernetes:
+
+[cols="2,4"]
+|===
+| Hafen | Zweck 
+
+
+| 8443 | Backchannel HTTPS 
+
+
+| 8001 | Prometheus-Metriken-Endpunkt 
+
+
+| 8000 | Trident REST-Server 
+
+
+| 17546 | Liveness-/Readiness-Probe-Port, der von Trident -DaemonSet-Pods verwendet wird 
+|===
+
+NOTE: Der Anschluss für die Lebendigkeits-/Bereitschaftsprüfung kann während der Installation mithilfe des `--probe-port` Flagge.  Es ist wichtig sicherzustellen, dass dieser Port nicht von einem anderen Prozess auf den Worker-Knoten verwendet wird.

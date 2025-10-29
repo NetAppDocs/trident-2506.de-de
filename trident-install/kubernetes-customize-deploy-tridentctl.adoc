@@ -1,0 +1,46 @@
+---
+sidebar: sidebar 
+permalink: trident-get-started/kubernetes-customize-deploy-tridentctl.html 
+keywords: deploy, Trident, methods, operator, tridentctl, helm, attributes, customize 
+summary: Sie können den Trident -Installer verwenden, um die Bereitstellung anzupassen. 
+---
+= tridentctl-Installation anpassen
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Sie können den Trident -Installer verwenden, um die Installation anzupassen.
+
+
+
+== Erfahren Sie mehr über den Installateur
+
+Mit dem Trident -Installer können Sie Attribute anpassen.  Wenn Sie beispielsweise das Trident -Image in ein privates Repository kopiert haben, können Sie den Image-Namen wie folgt angeben: `--trident-image` .  Wenn Sie das Trident -Image sowie die benötigten CSI-Sidecar-Images in ein privates Repository kopiert haben, ist es möglicherweise ratsam, den Speicherort dieses Repositorys mithilfe der folgenden Option anzugeben: `--image-registry` Schalter, der die Form annimmt `<registry FQDN>[:port]` .
+
+
+IMPORTANT: Bei der Installation von Trident in einem privaten Repository, wenn Sie die `--image-registry` Um den Speicherort des Repositorys anzugeben, verwenden Sie nicht `/netapp/` im Repository-Pfad. Zum Beispiel: `./tridentctl install --image-registry <image-registry> -n <namespace>`
+
+Wenn Sie eine Kubernetes-Distribution verwenden, wo `kubelet` speichert seine Daten auf einem anderen Pfad als dem üblichen `/var/lib/kubelet` Sie können den alternativen Pfad angeben, indem Sie `--kubelet-dir` .
+
+Falls Sie die Installation über die mit den Argumenten des Installationsprogramms möglichen Anpassungen hinaus anpassen müssen, können Sie auch die Bereitstellungsdateien anpassen.  Verwenden des `--generate-custom-yaml` Der Parameter erzeugt die folgenden YAML-Dateien im Installationsverzeichnis. `setup` Verzeichnis:
+
+* `trident-clusterrolebinding.yaml`
+* `trident-deployment.yaml`
+* `trident-crds.yaml`
+* `trident-clusterrole.yaml`
+* `trident-daemonset.yaml`
+* `trident-service.yaml`
+* `trident-namespace.yaml`
+* `trident-serviceaccount.yaml`
+* `trident-resourcequota.yaml`
+
+
+Nachdem Sie diese Dateien generiert haben, können Sie sie Ihren Bedürfnissen entsprechend anpassen und anschließend verwenden. `--use-custom-yaml` um Ihre benutzerdefinierte Bereitstellung zu installieren.
+
+[source, console]
+----
+./tridentctl install -n trident --use-custom-yaml
+----

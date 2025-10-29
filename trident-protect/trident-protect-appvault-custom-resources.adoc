@@ -1,0 +1,573 @@
+---
+sidebar: sidebar 
+permalink: trident-protect/trident-protect-appvault-custom-resources.html 
+keywords: trident. appvault, custom, protect, kubernetes 
+summary: 'Die Bucket Custom Resource (CR) für Trident Protect wird als AppVault bezeichnet.  AppVaults sind die deklarative Kubernetes-Workflow-Repräsentation eines Speicher-Buckets.' 
+---
+= Verwenden Sie Trident Protect AppVault-Objekte, um Buckets zu verwalten.
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Die Bucket Custom Resource (CR) für Trident Protect wird als AppVault bezeichnet. AppVault-Objekte sind die deklarative Kubernetes-Workflow-Darstellung eines Speicher-Buckets. Ein AppVault CR enthält die Konfigurationen, die für die Verwendung eines Buckets in Schutzvorgängen wie Backups, Snapshots, Wiederherstellungsvorgängen und SnapMirror Replikation erforderlich sind.  Nur Administratoren können AppVaults erstellen.
+
+Sie müssen eine AppVault-CR manuell oder über die Befehlszeile erstellen, wenn Sie Datenschutzvorgänge für eine Anwendung ausführen. Die AppVault-CR ist spezifisch für Ihre Umgebung. Die Beispiele auf dieser Seite können Ihnen beim Erstellen von AppVault-CRs als Leitfaden dienen.
+
+
+NOTE: Stellen Sie sicher, dass sich der AppVault CR auf dem Cluster befindet, auf dem Trident Protect installiert ist. Wenn der AppVault CR nicht vorhanden ist oder Sie nicht darauf zugreifen können, wird in der Befehlszeile ein Fehler angezeigt.
+
+
+
+== AppVault-Authentifizierung und Passwörter konfigurieren
+
+Bevor Sie einen AppVault CR erstellen, stellen Sie sicher, dass sich der AppVault und der von Ihnen gewählte Datenverschieber beim Anbieter und allen zugehörigen Ressourcen authentifizieren können.
+
+
+
+=== Passwörter für das Datenübertragungs-Repository
+
+Wenn Sie AppVault-Objekte mit CRs oder dem Trident Protect CLI-Plugin erstellen, können Sie ein Kubernetes-Geheimnis mit benutzerdefinierten Passwörtern für die Restic- und Kopia-Verschlüsselung angeben. Wenn Sie kein Geheimnis angeben, verwendet Trident Protect ein Standardpasswort.
+
+* Beim manuellen Erstellen von AppVault CRs verwenden Sie das Feld *spec.dataMoverPasswordSecretRef*, um das Geheimnis anzugeben.
+* Verwenden Sie beim Erstellen von AppVault-Objekten mit der Trident Protect CLI die `--data-mover-password-secret-ref` Argument zur Angabe des Geheimnisses.
+
+
+
+
+==== Erstellen Sie ein Passwort für das Datenübertragungs-Repository.
+
+Nutzen Sie die folgenden Beispiele, um das Passwortgeheimnis zu erstellen.  Wenn Sie AppVault-Objekte erstellen, können Sie Trident Protect anweisen, dieses Geheimnis zur Authentifizierung beim Datenübertragungsrepository zu verwenden.
+
+[NOTE]
+====
+* Je nachdem, welchen Datenmigrationsdienst Sie verwenden, müssen Sie nur das entsprechende Passwort für diesen Datenmigrationsdienst angeben.  Wenn Sie beispielsweise Restic verwenden und nicht planen, Kopia in Zukunft zu nutzen, können Sie beim Erstellen des Geheimnisses nur das Restic-Passwort angeben.
+* Bewahren Sie das Passwort an einem sicheren Ort auf. Sie benötigen es, um Daten auf demselben oder einem anderen Cluster wiederherzustellen. Wenn der Cluster oder der `trident-protect` Wenn der Namespace gelöscht wird, können Sie Ihre Backups oder Snapshots ohne das Passwort nicht wiederherstellen.
+
+
+====
+[role="tabbed-block"]
+====
+.Verwenden Sie einen CR
+--
+[source, yaml]
+----
+---
+apiVersion: v1
+data:
+  KOPIA_PASSWORD: <base64-encoded-password>
+  RESTIC_PASSWORD: <base64-encoded-password>
+kind: Secret
+metadata:
+  name: my-optional-data-mover-secret
+  namespace: trident-protect
+type: Opaque
+----
+--
+.Verwenden der CLI
+--
+[source, console]
+----
+kubectl create secret generic my-optional-data-mover-secret \
+--from-literal=KOPIA_PASSWORD=<plain-text-password> \
+--from-literal=RESTIC_PASSWORD=<plain-text-password> \
+-n trident-protect
+----
+--
+====
+
+
+=== S3-kompatible Speicher-IAM-Berechtigungen
+
+Wenn Sie auf S3-kompatiblen Speicher wie Amazon S3, Generic S3, zugreifen https://docs.netapp.com/us-en/storagegrid/s3/index.html["StorageGrid S3"^] , oder https://docs.netapp.com/us-en/ontap/s3-config/["ONTAP S3"^] Bei der Verwendung von Trident Protect müssen Sie sicherstellen, dass die von Ihnen angegebenen Benutzeranmeldeinformationen über die erforderlichen Berechtigungen für den Zugriff auf den Bucket verfügen.  Nachfolgend ein Beispiel für eine Richtlinie, die die minimal erforderlichen Berechtigungen für den Zugriff mit Trident Protect gewährt.  Sie können diese Richtlinie auf den Benutzer anwenden, der S3-kompatible Bucket-Richtlinien verwaltet.
+
+[source, json]
+----
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:ListBucket",
+        "s3:DeleteObject"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+----
+Weitere Informationen zu Amazon S3-Richtlinien finden Sie in den Beispielen im Abschnitt „…“. https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-policies-s3.html["Amazon S3-Dokumentation"^] .
+
+
+
+=== EKS Pod Identity für Amazon S3 (AWS)-Authentifizierung
+
+Trident Protect unterstützt EKS Pod Identity für Kopia-Datenverschiebungsvorgänge. Diese Funktion ermöglicht den sicheren Zugriff auf S3-Buckets, ohne AWS-Anmeldeinformationen in Kubernetes-Geheimnissen zu speichern.
+
+*Anforderungen für EKS Pod Identity mit Trident Protect*
+
+Bevor Sie EKS Pod Identity mit Trident Protect verwenden, stellen Sie Folgendes sicher:
+
+* In Ihrem EKS-Cluster ist Pod Identity aktiviert.
+* Sie haben eine IAM-Rolle mit den erforderlichen S3-Bucket-Berechtigungen erstellt. Weitere Informationen finden Sie unter link:https://docs.netapp.com/us-en/trident/trident-protect/trident-protect-appvault-custom-resources.html#s3-compatible-storage-iam-permissions["S3-kompatible Speicher-IAM-Berechtigungen"].
+* Die IAM-Rolle ist mit den folgenden Trident Protect-Dienstkonten verknüpft:
++
+** `<trident-protect>-controller-manager`
+** `<trident-protect>-resource-backup`
+** `<trident-protect>-resource-restore`
+** `<trident-protect>-resource-delete`
+
+
+
+
+Detaillierte Anweisungen zum Aktivieren von Pod Identity und zum Zuordnen von IAM-Rollen zu Servicekonten finden Sie in der Dokumentation. https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html["AWS EKS Pod Identity-Dokumentation"^] .
+
+*AppVault-Konfiguration* Wenn Sie EKS Pod Identity verwenden, konfigurieren Sie Ihre AppVault CR mit der `useIAM: true` Flagge statt expliziter Anmeldeinformationen:
+
+[source, yaml]
+----
+apiVersion: protect.trident.netapp.io/v1
+kind: AppVault
+metadata:
+  name: eks-protect-vault
+  namespace: trident-protect
+spec:
+  providerType: AWS
+  providerConfig:
+    s3:
+      bucketName: trident-protect-aws
+      endpoint: s3.example.com
+      useIAM: true
+----
+
+
+=== AppVault-Schlüsselgenerierungsbeispiele für Cloud-Anbieter
+
+Wenn Sie eine AppVault CR definieren, müssen Sie Anmeldeinformationen für den Zugriff auf die vom Anbieter gehosteten Ressourcen angeben, es sei denn, Sie verwenden die IAM-Authentifizierung. Die Art und Weise, wie Sie die Schlüssel für die Zugangsdaten generieren, unterscheidet sich je nach Anbieter. Nachfolgend finden Sie Beispiele für die Schlüsselgenerierung über die Befehlszeile für mehrere Anbieter. Sie können die folgenden Beispiele verwenden, um Schlüssel für die Anmeldeinformationen jedes Cloud-Anbieters zu erstellen.
+
+[role="tabbed-block"]
+====
+.Google Cloud
+--
+[source, console]
+----
+kubectl create secret generic <secret-name> \
+--from-file=credentials=<mycreds-file.json> \
+-n trident-protect
+----
+--
+.Amazon S3 (AWS)
+--
+[source, console]
+----
+kubectl create secret generic <secret-name> \
+--from-literal=accessKeyID=<objectstorage-accesskey> \
+--from-literal=secretAccessKey=<amazon-s3-trident-protect-src-bucket-secret> \
+-n trident-protect
+----
+--
+.Microsoft Azure
+--
+[source, console]
+----
+kubectl create secret generic <secret-name> \
+--from-literal=accountKey=<secret-name> \
+-n trident-protect
+----
+--
+.Generisches S3
+--
+[source, console]
+----
+kubectl create secret generic <secret-name> \
+--from-literal=accessKeyID=<objectstorage-accesskey> \
+--from-literal=secretAccessKey=<generic-s3-trident-protect-src-bucket-secret> \
+-n trident-protect
+----
+--
+.ONTAP S3
+--
+[source, console]
+----
+kubectl create secret generic <secret-name> \
+--from-literal=accessKeyID=<objectstorage-accesskey> \
+--from-literal=secretAccessKey=<ontap-s3-trident-protect-src-bucket-secret> \
+-n trident-protect
+----
+--
+.StorageGrid S3
+--
+[source, console]
+----
+kubectl create secret generic <secret-name> \
+--from-literal=accessKeyID=<objectstorage-accesskey> \
+--from-literal=secretAccessKey=<storagegrid-s3-trident-protect-src-bucket-secret> \
+-n trident-protect
+----
+--
+====
+
+
+== Beispiele für die Erstellung von AppVault
+
+Nachfolgend finden Sie Beispieldefinitionen für AppVault für jeden Anbieter.
+
+
+
+=== AppVault CR-Beispiele
+
+Anhand der folgenden CR-Beispiele können Sie AppVault-Objekte für jeden Cloud-Anbieter erstellen.
+
+[NOTE]
+====
+* Optional können Sie ein Kubernetes-Secret angeben, das benutzerdefinierte Passwörter für die Verschlüsselung der Restic- und Kopia-Repositorys enthält.  Siehe<<Passwörter für das Datenübertragungs-Repository>> für weitere Informationen.
+* Bei Amazon S3 (AWS) AppVault-Objekten können Sie optional ein SessionToken angeben, was nützlich ist, wenn Sie Single Sign-On (SSO) zur Authentifizierung verwenden.  Dieses Token wird erstellt, wenn Sie Schlüssel für den Anbieter generieren.<<AppVault-Schlüsselgenerierungsbeispiele für Cloud-Anbieter>> .
+* Für S3 AppVault-Objekte können Sie optional eine Egress-Proxy-URL für ausgehenden S3-Datenverkehr angeben. `spec.providerConfig.S3.proxyURL` Schlüssel.
+
+
+====
+[role="tabbed-block"]
+====
+.Google Cloud
+--
+[source, yaml]
+----
+apiVersion: protect.trident.netapp.io/v1
+kind: AppVault
+metadata:
+  name: gcp-trident-protect-src-bucket
+  namespace: trident-protect
+spec:
+  dataMoverPasswordSecretRef: my-optional-data-mover-secret
+  providerType: GCP
+  providerConfig:
+    gcp:
+      bucketName: trident-protect-src-bucket
+      projectID: project-id
+  providerCredentials:
+    credentials:
+      valueFromSecret:
+        key: credentials
+        name: gcp-trident-protect-src-bucket-secret
+----
+--
+.Amazon S3 (AWS)
+--
+[source, yaml]
+----
+---
+apiVersion: protect.trident.netapp.io/v1
+kind: AppVault
+metadata:
+  name: amazon-s3-trident-protect-src-bucket
+  namespace: trident-protect
+spec:
+  dataMoverPasswordSecretRef: my-optional-data-mover-secret
+  providerType: AWS
+  providerConfig:
+    s3:
+      bucketName: trident-protect-src-bucket
+      endpoint: s3.example.com
+      proxyURL: http://10.1.1.1:3128
+  providerCredentials:
+    accessKeyID:
+      valueFromSecret:
+        key: accessKeyID
+        name: s3-secret
+    secretAccessKey:
+      valueFromSecret:
+        key: secretAccessKey
+        name: s3-secret
+    sessionToken:
+      valueFromSecret:
+        key: sessionToken
+        name: s3-secret
+----
+
+NOTE: Bei EKS-Umgebungen, die Pod Identity mit Kopia Data Mover verwenden, können Sie die `providerCredentials` Abschnitt und hinzufügen `useIAM: true` unter dem `s3` stattdessen Konfiguration.
+
+--
+.Microsoft Azure
+--
+[source, yaml]
+----
+apiVersion: protect.trident.netapp.io/v1
+kind: AppVault
+metadata:
+  name: azure-trident-protect-src-bucket
+  namespace: trident-protect
+spec:
+  dataMoverPasswordSecretRef: my-optional-data-mover-secret
+  providerType: Azure
+  providerConfig:
+    azure:
+      accountName: account-name
+      bucketName: trident-protect-src-bucket
+  providerCredentials:
+    accountKey:
+      valueFromSecret:
+        key: accountKey
+        name: azure-trident-protect-src-bucket-secret
+----
+--
+.Generisches S3
+--
+[source, yaml]
+----
+apiVersion: protect.trident.netapp.io/v1
+kind: AppVault
+metadata:
+  name: generic-s3-trident-protect-src-bucket
+  namespace: trident-protect
+spec:
+  dataMoverPasswordSecretRef: my-optional-data-mover-secret
+  providerType: GenericS3
+  providerConfig:
+    s3:
+      bucketName: trident-protect-src-bucket
+      endpoint: s3.example.com
+      proxyURL: http://10.1.1.1:3128
+  providerCredentials:
+    accessKeyID:
+      valueFromSecret:
+        key: accessKeyID
+        name: s3-secret
+    secretAccessKey:
+      valueFromSecret:
+        key: secretAccessKey
+        name: s3-secret
+----
+--
+.ONTAP S3
+--
+[source, yaml]
+----
+apiVersion: protect.trident.netapp.io/v1
+kind: AppVault
+metadata:
+  name: ontap-s3-trident-protect-src-bucket
+  namespace: trident-protect
+spec:
+  dataMoverPasswordSecretRef: my-optional-data-mover-secret
+  providerType: OntapS3
+  providerConfig:
+    s3:
+      bucketName: trident-protect-src-bucket
+      endpoint: s3.example.com
+      proxyURL: http://10.1.1.1:3128
+  providerCredentials:
+    accessKeyID:
+      valueFromSecret:
+        key: accessKeyID
+        name: s3-secret
+    secretAccessKey:
+      valueFromSecret:
+        key: secretAccessKey
+        name: s3-secret
+----
+--
+.StorageGrid S3
+--
+[source, yaml]
+----
+apiVersion: protect.trident.netapp.io/v1
+kind: AppVault
+metadata:
+  name: storagegrid-s3-trident-protect-src-bucket
+  namespace: trident-protect
+spec:
+  dataMoverPasswordSecretRef: my-optional-data-mover-secret
+  providerType: StorageGridS3
+  providerConfig:
+    s3:
+      bucketName: trident-protect-src-bucket
+      endpoint: s3.example.com
+      proxyURL: http://10.1.1.1:3128
+  providerCredentials:
+    accessKeyID:
+      valueFromSecret:
+        key: accessKeyID
+        name: s3-secret
+    secretAccessKey:
+      valueFromSecret:
+        key: secretAccessKey
+        name: s3-secret
+----
+--
+====
+
+
+=== Beispiele zur AppVault-Erstellung mit der Trident Protect CLI
+
+Sie können die folgenden CLI-Befehlsbeispiele verwenden, um AppVault CRs für jeden Anbieter zu erstellen.
+
+[NOTE]
+====
+* Optional können Sie ein Kubernetes-Secret angeben, das benutzerdefinierte Passwörter für die Verschlüsselung der Restic- und Kopia-Repositorys enthält.  Siehe<<Passwörter für das Datenübertragungs-Repository>> für weitere Informationen.
+* Für S3 AppVault-Objekte können Sie optional eine Egress-Proxy-URL für ausgehenden S3-Datenverkehr angeben. `--proxy-url <ip_address:port>` Argument.
+
+
+====
+[role="tabbed-block"]
+====
+.Google Cloud
+--
+[source, console]
+----
+tridentctl-protect create vault GCP <vault-name> \
+--bucket <mybucket> \
+--project <my-gcp-project> \
+--secret <secret-name>/credentials \
+--data-mover-password-secret-ref <my-optional-data-mover-secret> \
+-n trident-protect
+
+----
+--
+.Amazon S3 (AWS)
+--
+[source, console]
+----
+tridentctl-protect create vault AWS <vault-name> \
+--bucket <bucket-name> \
+--secret  <secret-name>  \
+--endpoint <s3-endpoint> \
+--data-mover-password-secret-ref <my-optional-data-mover-secret> \
+-n trident-protect
+----
+--
+.Microsoft Azure
+--
+[source, console]
+----
+tridentctl-protect create vault Azure <vault-name> \
+--account <account-name> \
+--bucket <bucket-name> \
+--secret <secret-name> \
+--data-mover-password-secret-ref <my-optional-data-mover-secret> \
+-n trident-protect
+----
+--
+.Generisches S3
+--
+[source, console]
+----
+tridentctl-protect create vault GenericS3 <vault-name> \
+--bucket <bucket-name> \
+--secret  <secret-name>  \
+--endpoint <s3-endpoint> \
+--data-mover-password-secret-ref <my-optional-data-mover-secret> \
+-n trident-protect
+----
+--
+.ONTAP S3
+--
+[source, console]
+----
+tridentctl-protect create vault OntapS3 <vault-name> \
+--bucket <bucket-name> \
+--secret  <secret-name>  \
+--endpoint <s3-endpoint> \
+--data-mover-password-secret-ref <my-optional-data-mover-secret> \
+-n trident-protect
+----
+--
+.StorageGrid S3
+--
+[source, console]
+----
+tridentctl-protect create vault StorageGridS3 <vault-name> \
+--bucket <bucket-name> \
+--secret  <secret-name>  \
+--endpoint <s3-endpoint> \
+--data-mover-password-secret-ref <my-optional-data-mover-secret> \
+-n trident-protect
+----
+--
+====
+
+
+== AppVault-Informationen anzeigen
+
+Mit dem Trident Protect CLI-Plugin können Sie Informationen über AppVault-Objekte anzeigen, die Sie auf dem Cluster erstellt haben.
+
+.Schritte
+. Den Inhalt eines AppVault-Objekts anzeigen:
++
+[source, console]
+----
+tridentctl-protect get appvaultcontent gcp-vault \
+--show-resources all \
+-n trident-protect
+----
++
+*Beispielausgabe*:
+
++
+[listing]
+----
++-------------+-------+----------+-----------------------------+---------------------------+
+|   CLUSTER   |  APP  |   TYPE   |            NAME             |         TIMESTAMP         |
++-------------+-------+----------+-----------------------------+---------------------------+
+|             | mysql | snapshot | mysnap                      | 2024-08-09 21:02:11 (UTC) |
+| production1 | mysql | snapshot | hourly-e7db6-20240815180300 | 2024-08-15 18:03:06 (UTC) |
+| production1 | mysql | snapshot | hourly-e7db6-20240815190300 | 2024-08-15 19:03:06 (UTC) |
+| production1 | mysql | snapshot | hourly-e7db6-20240815200300 | 2024-08-15 20:03:06 (UTC) |
+| production1 | mysql | backup   | hourly-e7db6-20240815180300 | 2024-08-15 18:04:25 (UTC) |
+| production1 | mysql | backup   | hourly-e7db6-20240815190300 | 2024-08-15 19:03:30 (UTC) |
+| production1 | mysql | backup   | hourly-e7db6-20240815200300 | 2024-08-15 20:04:21 (UTC) |
+| production1 | mysql | backup   | mybackup5                   | 2024-08-09 22:25:13 (UTC) |
+|             | mysql | backup   | mybackup                    | 2024-08-09 21:02:52 (UTC) |
++-------------+-------+----------+-----------------------------+---------------------------+
+----
+. Optional kann der AppVaultPath für jede Ressource mit dem Flag angezeigt werden. `--show-paths` .
++
+Der Clustername in der ersten Spalte der Tabelle ist nur verfügbar, wenn bei der Trident Protect Helm-Installation ein Clustername angegeben wurde.  Zum Beispiel: `--set clusterName=production1` .
+
+
+
+
+
+== AppVault entfernen
+
+Sie können ein AppVault-Objekt jederzeit entfernen.
+
+
+NOTE: Entfernen Sie nicht die `finalizers` Geben Sie den Schlüssel im AppVault CR ein, bevor Sie das AppVault-Objekt löschen.  Wenn Sie dies tun, kann es zu Restdaten im AppVault-Bucket und zu verwaisten Ressourcen im Cluster kommen.
+
+.Bevor Sie beginnen
+Stellen Sie sicher, dass Sie alle Snapshot- und Backup-CRs gelöscht haben, die von dem AppVault verwendet werden, den Sie löschen möchten.
+
+[role="tabbed-block"]
+====
+.Entfernen eines AppVaults mithilfe der Kubernetes-CLI
+--
+. Entfernen Sie das AppVault-Objekt und ersetzen Sie es durch `appvault-name` mit dem Namen des zu entfernenden AppVault-Objekts:
++
+[source, console]
+----
+kubectl delete appvault <appvault-name> \
+-n trident-protect
+----
+
+
+--
+.Entfernen Sie einen AppVault mithilfe der Trident Protect CLI.
+--
+. Entfernen Sie das AppVault-Objekt und ersetzen Sie es durch `appvault-name` mit dem Namen des zu entfernenden AppVault-Objekts:
++
+[source, console]
+----
+tridentctl-protect delete appvault <appvault-name> \
+-n trident-protect
+----
+
+
+--
+====

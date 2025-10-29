@@ -1,0 +1,106 @@
+---
+sidebar: sidebar 
+permalink: trident-use/backend_ops_tridentctl.html 
+keywords: backends, storage system, anf, cvs for aws, cvs for gcp, element, hci, solidfire, ontap, aff, fas, ontap select, configure backends, tridentctl, create backends, delete backends, view backends, update backends 
+summary: 'Erfahren Sie, wie Sie Backend-Verwaltungsvorgänge durchführen, indem Sie `tridentctl` .' 
+---
+= Führen Sie die Backend-Verwaltung mit tridentctl durch.
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Erfahren Sie, wie Sie Backend-Verwaltungsvorgänge durchführen, indem Sie `tridentctl` .
+
+
+
+== Erstelle ein Backend
+
+Nachdem Sie einlink:backends.html["Backend-Konfigurationsdatei"^] Führen Sie folgenden Befehl aus:
+
+[listing]
+----
+tridentctl create backend -f <backend-file> -n trident
+----
+Wenn die Backend-Erstellung fehlschlägt, gab es ein Problem mit der Backend-Konfiguration.  Sie können die Protokolle einsehen, um die Ursache zu ermitteln, indem Sie folgenden Befehl ausführen:
+
+[listing]
+----
+tridentctl logs -n trident
+----
+Nachdem Sie das Problem mit der Konfigurationsdatei identifiziert und behoben haben, können Sie es einfach ausführen. `create` Den Befehl erneut geben.
+
+
+
+== Backend löschen
+
+Um ein Backend aus Trident zu löschen, gehen Sie wie folgt vor:
+
+. Den Backend-Namen abrufen:
++
+[listing]
+----
+tridentctl get backend -n trident
+----
+. Backend löschen:
++
+[listing]
+----
+tridentctl delete backend <backend-name> -n trident
+----
+
+
+
+NOTE: Falls Trident über dieses Backend Volumes und Snapshots bereitgestellt hat, die noch existieren, verhindert das Löschen des Backends, dass neue Volumes über dieses Backend bereitgestellt werden.  Das Backend wird weiterhin im Status „Löschen“ verbleiben.
+
+
+
+== Die vorhandenen Backends ansehen
+
+Um die von Trident bekannten Backends anzuzeigen, gehen Sie wie folgt vor:
+
+* Um eine Zusammenfassung zu erhalten, führen Sie folgenden Befehl aus:
++
+[listing]
+----
+tridentctl get backend -n trident
+----
+* Um alle Details zu erhalten, führen Sie folgenden Befehl aus:
++
+[listing]
+----
+tridentctl get backend -o json -n trident
+----
+
+
+
+
+== Aktualisieren Sie ein Backend
+
+Nachdem Sie eine neue Backend-Konfigurationsdatei erstellt haben, führen Sie folgenden Befehl aus:
+
+[listing]
+----
+tridentctl update backend <backend-name> -f <backend-file> -n trident
+----
+Wenn das Backend-Update fehlschlägt, lag entweder ein Fehler in der Backend-Konfiguration vor oder Sie haben versucht, ein ungültiges Update durchzuführen.  Sie können die Protokolle einsehen, um die Ursache zu ermitteln, indem Sie folgenden Befehl ausführen:
+
+[listing]
+----
+tridentctl logs -n trident
+----
+Nachdem Sie das Problem mit der Konfigurationsdatei identifiziert und behoben haben, können Sie es einfach ausführen. `update` Den Befehl erneut geben.
+
+
+
+== Identifizieren Sie die Speicherklassen, die ein Backend verwenden.
+
+Dies ist ein Beispiel für die Art von Fragen, die Sie mit JSON beantworten können. `tridentctl` Ausgaben für Backend-Objekte.  Dies verwendet die `jq` Dienstprogramm, das Sie installieren müssen.
+
+[listing]
+----
+tridentctl get backend -o json | jq '[.items[] | {backend: .name, storageClasses: [.storage[].storageClasses]|unique}]'
+----
+Dies gilt auch für Backends, die durch die Verwendung von [fehlende Information] erstellt wurden. `TridentBackendConfig` .

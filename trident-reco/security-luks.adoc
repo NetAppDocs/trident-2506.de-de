@@ -1,0 +1,270 @@
+---
+sidebar: sidebar 
+permalink: trident-reco/security-luks.html 
+keywords: security, luks, linux unified key setup, encryption, key rotation, resizing, advanced encryption, rotation, key, import 
+summary: 'Sie können Linux Unified Key Setup (LUKS) aktivieren, um ONTAP SAN- und ONTAP SAN ECONOMY-Volumes auf Trident zu verschlüsseln.  Trident unterstützt die Größenänderung von Volumes und die Rotation des Schlüssels (Passphrase) für LUKS-verschlüsselte Volumes.' 
+---
+= Linux Unified Key Setup (LUKS)
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Sie können Linux Unified Key Setup (LUKS) aktivieren, um ONTAP SAN- und ONTAP SAN ECONOMY-Volumes auf Trident zu verschlüsseln.  Trident unterstützt die Rotation von Passphrasen und die Volumenerweiterung für LUKS-verschlüsselte Volumes.
+
+In Trident verwenden LUKS-verschlüsselte Volumes die aes-xts-plain64-Verschlüsselung und den entsprechenden Modus, wie von empfohlen.link:https://csrc.nist.gov/publications/detail/sp/800-38e/final["NIST"^] .
+
+
+NOTE: LUKS-Verschlüsselung wird für ASA r2-Systeme nicht unterstützt.  Informationen zu ASA r2-Systemen finden Sie unterlink:https://docs.netapp.com/us-en/asa-r2/get-started/learn-about.html["Erfahren Sie mehr über ASA R2-Speichersysteme"^] .
+
+.Bevor Sie beginnen
+* Auf den Worker-Knoten muss cryptsetup 2.1 oder höher (aber niedriger als 3.0) installiert sein.  Weitere Informationen finden Sie unterlink:https://gitlab.com/cryptsetup/cryptsetup["GitLab: cryptsetup"^] .
+* Aus Performancegründen empfiehlt NetApp , dass Worker-Knoten den Advanced Encryption Standard New Instructions (AES-NI) unterstützen.  Um die AES-NI-Unterstützung zu überprüfen, führen Sie folgenden Befehl aus:
++
+[listing]
+----
+grep "aes" /proc/cpuinfo
+----
++
+Wenn keine Antwort zurückgegeben wird, unterstützt Ihr Prozessor AES-NI nicht.  Weitere Informationen zu AES-NI finden Sie unter:link:https://www.intel.com/content/www/us/en/developer/articles/technical/advanced-encryption-standard-instructions-aes-ni.html["Intel: Advanced Encryption Standard Instructions (AES-NI)"^] .
+
+
+
+
+
+== LUKS-Verschlüsselung aktivieren
+
+Sie können die volumenbezogene, hostseitige Verschlüsselung mithilfe von Linux Unified Key Setup (LUKS) für ONTAP SAN- und ONTAP SAN ECONOMY-Volumes aktivieren.
+
+.Schritte
+. Definieren Sie die LUKS-Verschlüsselungsattribute in der Backend-Konfiguration.  Weitere Informationen zu den Backend-Konfigurationsoptionen für ONTAP SAN finden Sie unterlink:../trident-use/ontap-san-examples.html["ONTAP SAN-Konfigurationsoptionen"] .
++
+[source, json]
+----
+{
+  "storage": [
+    {
+      "labels": {
+        "luks": "true"
+      },
+      "zone": "us_east_1a",
+      "defaults": {
+        "luksEncryption": "true"
+      }
+    },
+    {
+      "labels": {
+        "luks": "false"
+      },
+      "zone": "us_east_1a",
+      "defaults": {
+        "luksEncryption": "false"
+      }
+    }
+  ]
+}
+----
+. Verwenden `parameters.selector` Die Speicherpools werden mithilfe der LUKS-Verschlüsselung definiert. Beispiel:
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: luks
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "luks=true"
+  csi.storage.k8s.io/node-stage-secret-name: luks-${pvc.name}
+  csi.storage.k8s.io/node-stage-secret-namespace: ${pvc.namespace}
+----
+. Erstellen Sie ein Geheimnis, das die LUKS-Passphrase enthält. Beispiel:
++
+[source, yaml]
+----
+kubectl -n trident create -f luks-pvc1.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: luks-pvc1
+stringData:
+  luks-passphrase-name: A
+  luks-passphrase: secretA
+----
+
+
+
+
+=== Einschränkungen
+
+LUKS-verschlüsselte Datenträger können die Deduplizierung und Komprimierung von ONTAP nicht nutzen.
+
+
+
+== Backend-Konfiguration für den Import von LUKS-Volumes
+
+Um ein LUKS-Volume zu importieren, müssen Sie Folgendes einstellen: `luksEncryption` Zu(`true` im Backend.  Der `luksEncryption` Diese Option teilt Trident mit, ob das Volume LUKS-kompatibel ist.(`true` oder nicht LUKS-konform(`false` ) wie im folgenden Beispiel gezeigt.
+
+[source, yaml]
+----
+version: 1
+storageDriverName: ontap-san
+managementLIF: 10.0.0.1
+dataLIF: 10.0.0.2
+svm: trident_svm
+username: admin
+password: password
+defaults:
+  luksEncryption: 'true'
+  spaceAllocation: 'false'
+  snapshotPolicy: default
+  snapshotReserve: '10'
+----
+
+
+== PVC-Konfiguration für den Import von LUKS-Volumes
+
+Um LUKS-Volumes dynamisch zu importieren, legen Sie die Annotation fest. `trident.netapp.io/luksEncryption` Zu `true` und eine LUKS-fähige Speicherklasse in die PVC einbinden, wie in diesem Beispiel gezeigt.
+
+[source, yaml]
+----
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: luks-pvc
+  namespace: trident
+  annotations:
+    trident.netapp.io/luksEncryption: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: luks-sc
+----
+
+
+== LUKS-Passphrase rotieren
+
+Sie können die LUKS-Passphrase ändern und die Änderung bestätigen.
+
+
+WARNING: Vergessen Sie eine Passphrase erst dann, wenn Sie sichergestellt haben, dass sie von keinem Volume, Snapshot oder Geheimnis mehr referenziert wird.  Geht die angegebene Passphrase verloren, kann das Volume möglicherweise nicht eingebunden werden und die Daten bleiben verschlüsselt und unzugänglich.
+
+.Informationen zu diesem Vorgang
+Eine LUKS-Passphrase-Rotation tritt auf, wenn ein Pod, der das Volume einbindet, erstellt wird, nachdem eine neue LUKS-Passphrase angegeben wurde.  Wenn ein neuer Pod erstellt wird, vergleicht Trident die LUKS-Passphrase des Volumes mit der aktiven Passphrase im Secret.
+
+* Stimmt die Passphrase des Volumes nicht mit der aktiven Passphrase im Geheimnis überein, findet eine Rotation statt.
+* Wenn die Passphrase des Volumes mit der aktiven Passphrase im Geheimnis übereinstimmt, `previous-luks-passphrase` Der Parameter wird ignoriert.
+
+
+.Schritte
+. Füge die `node-publish-secret-name` Und `node-publish-secret-namespace` StorageClass-Parameter. Beispiel:
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: csi-san
+provisioner: csi.trident.netapp.io
+parameters:
+  trident.netapp.io/backendType: "ontap-san"
+  csi.storage.k8s.io/node-stage-secret-name: luks
+  csi.storage.k8s.io/node-stage-secret-namespace: ${pvc.namespace}
+  csi.storage.k8s.io/node-publish-secret-name: luks
+  csi.storage.k8s.io/node-publish-secret-namespace: ${pvc.namespace}
+----
+. Identifizieren Sie vorhandene Passphrasen auf dem Volume oder Snapshot.
++
+.Volumen
+[listing]
+----
+tridentctl -d get volume luks-pvc1
+GET http://127.0.0.1:8000/trident/v1/volume/<volumeID>
+
+...luksPassphraseNames:["A"]
+----
++
+.Schnappschuss
+[listing]
+----
+tridentctl -d get snapshot luks-pvc1
+GET http://127.0.0.1:8000/trident/v1/volume/<volumeID>/<snapshotID>
+
+...luksPassphraseNames:["A"]
+----
+. Aktualisieren Sie das LUKS-Geheimnis für das Volume, um die neue und die vorherige Passphrase anzugeben.  Sicherstellen `previous-luke-passphrase-name` Und `previous-luks-passphrase` Die vorherige Passphrase muss übereinstimmen.
++
+[source, yaml]
+----
+apiVersion: v1
+kind: Secret
+metadata:
+  name: luks-pvc1
+stringData:
+  luks-passphrase-name: B
+  luks-passphrase: secretB
+  previous-luks-passphrase-name: A
+  previous-luks-passphrase: secretA
+----
+. Erstelle einen neuen Pod, der das Volume einbindet.  Dies ist erforderlich, um die Rotation einzuleiten.
+. Überprüfen Sie, ob die Passphrase geändert wurde.
++
+.Volumen
+[listing]
+----
+tridentctl -d get volume luks-pvc1
+GET http://127.0.0.1:8000/trident/v1/volume/<volumeID>
+
+...luksPassphraseNames:["B"]
+----
++
+.Schnappschuss
+[listing]
+----
+tridentctl -d get snapshot luks-pvc1
+GET http://127.0.0.1:8000/trident/v1/volume/<volumeID>/<snapshotID>
+
+...luksPassphraseNames:["B"]
+----
+
+
+.Ergebnisse
+Die Passphrase wurde geändert, wenn auf dem Volume und im Snapshot nur noch die neue Passphrase angezeigt wird.
+
+
+NOTE: Wenn zwei Passphrasen zurückgegeben werden, zum Beispiel `luksPassphraseNames: ["B", "A"]` Die Rotation ist unvollständig.  Sie können eine neue Kapsel auslösen, um zu versuchen, die Rotation abzuschließen.
+
+
+
+== Volumenerweiterung aktivieren
+
+Sie können die Volumenerweiterung auf einem LUKS-verschlüsselten Volumen aktivieren.
+
+.Schritte
+. Aktivieren Sie die `CSINodeExpandSecret` Feature Gate (Beta 1,25+). Siehe link:https://kubernetes.io/blog/2022/09/21/kubernetes-1-25-use-secrets-while-expanding-csi-volumes-on-node-alpha/["Kubernetes 1.25: Verwendung von Secrets zur knotengesteuerten Erweiterung von CSI-Volumes"^] für Details.
+. Füge die `node-expand-secret-name` Und `node-expand-secret-namespace` StorageClass-Parameter. Beispiel:
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: luks
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "luks=true"
+  csi.storage.k8s.io/node-stage-secret-name: luks-${pvc.name}
+  csi.storage.k8s.io/node-stage-secret-namespace: ${pvc.namespace}
+  csi.storage.k8s.io/node-expand-secret-name: luks-${pvc.name}
+  csi.storage.k8s.io/node-expand-secret-namespace: ${pvc.namespace}
+allowVolumeExpansion: true
+----
+
+
+.Ergebnisse
+Wenn Sie die Online-Speichererweiterung starten, übergibt das Kubelet die entsprechenden Anmeldeinformationen an den Treiber.

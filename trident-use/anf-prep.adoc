@@ -1,0 +1,107 @@
+---
+sidebar: sidebar 
+permalink: trident-use/anf-prep.html 
+keywords: trident backend, azure netapp files, smb volumes, smb, windows, active directory, csi proxy, aks, managed identities 
+summary: Bevor Sie Ihr Azure NetApp Files Backend konfigurieren können, müssen Sie sicherstellen, dass die folgenden Anforderungen erfüllt sind. 
+---
+= Bereiten Sie die Konfiguration eines Azure NetApp Files -Backends vor.
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Bevor Sie Ihr Azure NetApp Files Backend konfigurieren können, müssen Sie sicherstellen, dass die folgenden Anforderungen erfüllt sind.
+
+
+
+== Voraussetzungen für NFS- und SMB-Volumes
+
+Wenn Sie Azure NetApp Files zum ersten Mal oder an einem neuen Standort verwenden, ist eine anfängliche Konfiguration erforderlich, um Azure NetApp Files einzurichten und ein NFS-Volume zu erstellen. Siehe https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-quickstart-set-up-account-create-volumes["Azure: Azure NetApp Files einrichten und ein NFS-Volume erstellen"^] .
+
+Um ein https://azure.microsoft.com/en-us/services/netapp/["Azure NetApp Files"^] Im Backend benötigen Sie Folgendes:
+
+[NOTE]
+====
+* `subscriptionID`, `tenantID` , `clientID` , `location` , Und `clientSecret` sind optional bei der Verwendung von verwalteten Identitäten auf einem AKS-Cluster.
+* `tenantID`, `clientID` , Und `clientSecret` sind optional, wenn eine Cloud-Identität auf einem AKS-Cluster verwendet wird.
+
+
+====
+* Ein Kapazitätspool. Siehelink:https://learn.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-set-up-capacity-pool["Microsoft: Erstellen eines Kapazitätspools für Azure NetApp Files"^] .
+* Ein an Azure NetApp Files delegiertes Subnetz. Siehelink:https://learn.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-delegate-subnet["Microsoft: Ein Subnetz an Azure NetApp Files delegieren"^] .
+* `subscriptionID`aus einem Azure-Abonnement mit aktiviertem Azure NetApp Files .
+* `tenantID`, `clientID` , Und `clientSecret` von einemlink:https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal["App-Registrierung"^] in Azure Active Directory mit ausreichenden Berechtigungen für den Azure NetApp Files -Dienst.  Für die App-Registrierung sollte eines der folgenden Verfahren verwendet werden:
++
+** Die Rolle des Eigentümers oder Mitwirkendenlink:https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles["von Azure vordefiniert"^] .
+** Alink:https://learn.microsoft.com/en-us/azure/role-based-access-control/custom-roles-portal["benutzerdefinierte Mitwirkenderrolle"] auf Abonnementebene(`assignableScopes` ) mit den folgenden Berechtigungen, die auf das beschränkt sind, was Trident benötigt.  Nach dem Erstellen der benutzerdefinierten Rolle,link:https://learn.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal["Weisen Sie die Rolle über das Azure-Portal zu."^] .
++
+.Benutzerdefinierte Mitwirkenderrolle
+[%collapsible]
+====
+[source, JSON]
+----
+{
+  "id": "/subscriptions/<subscription-id>/providers/Microsoft.Authorization/roleDefinitions/<role-definition-id>",
+  "properties": {
+    "roleName": "custom-role-with-limited-perms",
+    "description": "custom role providing limited permissions",
+    "assignableScopes": [
+      "/subscriptions/<subscription-id>"
+    ],
+    "permissions": [
+      {
+        "actions": [
+          "Microsoft.NetApp/netAppAccounts/capacityPools/read",
+          "Microsoft.NetApp/netAppAccounts/capacityPools/write",
+          "Microsoft.NetApp/netAppAccounts/capacityPools/volumes/read",
+          "Microsoft.NetApp/netAppAccounts/capacityPools/volumes/write",
+          "Microsoft.NetApp/netAppAccounts/capacityPools/volumes/delete",
+          "Microsoft.NetApp/netAppAccounts/capacityPools/volumes/snapshots/read",
+          "Microsoft.NetApp/netAppAccounts/capacityPools/volumes/snapshots/write",
+          "Microsoft.NetApp/netAppAccounts/capacityPools/volumes/snapshots/delete",
+          "Microsoft.NetApp/netAppAccounts/capacityPools/volumes/MountTargets/read",
+          "Microsoft.Network/virtualNetworks/read",
+          "Microsoft.Network/virtualNetworks/subnets/read",
+          "Microsoft.Features/featureProviders/subscriptionFeatureRegistrations/read",
+          "Microsoft.Features/featureProviders/subscriptionFeatureRegistrations/write",
+          "Microsoft.Features/featureProviders/subscriptionFeatureRegistrations/delete",
+          "Microsoft.Features/features/read",
+          "Microsoft.Features/operations/read",
+          "Microsoft.Features/providers/features/read",
+          "Microsoft.Features/providers/features/register/action",
+          "Microsoft.Features/providers/features/unregister/action",
+          "Microsoft.Features/subscriptionFeatureRegistrations/read"
+        ],
+        "notActions": [],
+        "dataActions": [],
+        "notDataActions": []
+      }
+    ]
+  }
+}
+----
+====
+
+
+* Die Azur `location` das mindestens eines enthält https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-delegate-subnet["delegiertes Subnetz"^] .  Stand Trident 22.01, `location` Der Parameter ist ein Pflichtfeld auf oberster Ebene der Backend-Konfigurationsdatei.  In virtuellen Pools angegebene Standortwerte werden ignoriert.
+* Anwendung `Cloud Identity` , hol dir die `client ID` von einem https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/how-manage-user-assigned-managed-identities["vom Benutzer zugewiesene verwaltete Identität"^] und geben Sie diese ID an in `azure.workload.identity/client-id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx` .
+
+
+
+
+== Zusätzliche Anforderungen für SMB-Volumina
+
+Zum Erstellen eines SMB-Volumes benötigen Sie Folgendes:
+
+* Active Directory ist konfiguriert und mit Azure NetApp Files verbunden. Siehelink:https://learn.microsoft.com/en-us/azure/azure-netapp-files/create-active-directory-connections["Microsoft: Erstellen und Verwalten von Active Directory-Verbindungen für Azure NetApp Files"^] .
+* Ein Kubernetes-Cluster mit einem Linux-Controller-Knoten und mindestens einem Windows-Worker-Knoten, auf dem Windows Server 2022 ausgeführt wird.  Trident unterstützt SMB-Volumes nur, wenn sie in Pods eingebunden sind, die auf Windows-Knoten laufen.
+* Mindestens ein Trident Geheimnis, das Ihre Active Directory-Anmeldeinformationen enthält, damit Azure NetApp Files sich bei Active Directory authentifizieren kann.  Um Geheimnisse zu generieren `smbcreds` :
++
+[listing]
+----
+kubectl create secret generic smbcreds --from-literal username=user --from-literal password='password'
+----
+* Ein als Windows-Dienst konfigurierter CSI-Proxy.  Um einen zu konfigurieren `csi-proxy` , siehelink:https://github.com/kubernetes-csi/csi-proxy["GitHub: CSI-Proxy"^] oderlink:https://github.com/Azure/aks-engine/blob/master/docs/topics/csi-proxy-windows.md["GitHub: CSI-Proxy für Windows"^] für Kubernetes-Knoten, die unter Windows laufen.
+

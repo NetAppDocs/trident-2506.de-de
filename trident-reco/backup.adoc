@@ -1,0 +1,128 @@
+---
+sidebar: sidebar 
+permalink: trident-reco/backup.html 
+keywords: data protection, replication, dr, disaster recovery, snapmirror, back up, snapshot, element, volume replication 
+summary: Erfahren Sie mehr über Schutz- und Wiederherstellungsoptionen für Trident und mit Trident erstellte Volumes.  Sie sollten für jede Anwendung mit Persistenzanforderungen eine Datensicherungs- und -wiederherstellungsstrategie haben. 
+---
+= Datenschutz und Notfallwiederherstellung
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Erfahren Sie mehr über Schutz- und Wiederherstellungsoptionen für Trident und mit Trident erstellte Volumes.  Sie sollten für jede Anwendung mit Persistenzanforderungen eine Datensicherungs- und -wiederherstellungsstrategie haben.
+
+
+
+== Trident -Replikation und -Wiederherstellung
+
+Sie können eine Sicherungskopie erstellen, um Trident im Katastrophenfall wiederherzustellen.
+
+
+
+=== Trident -Replikation
+
+Trident verwendet Kubernetes CRDs, um seinen eigenen Zustand zu speichern und zu verwalten, und das Kubernetes-Cluster-etcd, um seine Metadaten zu speichern.
+
+.Schritte
+. Sichern Sie den etcd-Speicher des Kubernetes-Clusters mitlink:https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#backing-up-an-etcd-cluster["Kubernetes: Sichern eines etcd-Clusters"^] .
+. Platzieren Sie die Sicherungsdateien auf einem FlexVol volume.
++
+
+NOTE: NetApp empfiehlt, die SVM, auf der sich FlexVol befindet, durch eine SnapMirror -Beziehung zu einer anderen SVM zu schützen.
+
+
+
+
+
+=== Trident Wiederherstellung
+
+Mithilfe von Kubernetes CRDs und dem etcd-Snapshot des Kubernetes-Clusters lässt sich Trident wiederherstellen.
+
+.Schritte
+. Vom Ziel-SVM wird das Volume, das die Kubernetes etcd-Datendateien und Zertifikate enthält, auf dem Host eingebunden, der als Master-Knoten eingerichtet werden soll.
+. Kopieren Sie alle erforderlichen Zertifikate, die sich auf den Kubernetes-Cluster beziehen, unter `/etc/kubernetes/pki` und die etcd-Mitgliedsdateien unter `/var/lib/etcd` .
+. Stellen Sie den Kubernetes-Cluster aus dem etcd-Backup wieder her, indem Sielink:https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#restoring-an-etcd-cluster["Kubernetes: Wiederherstellen eines etcd-Clusters"^] .
+. Laufen `kubectl get crd` um zu überprüfen, ob alle Trident Benutzerressourcen geladen wurden, und um die Trident -Objekte abzurufen, um zu überprüfen, ob alle Daten verfügbar sind.
+
+
+
+
+== SVM-Replikation und -Wiederherstellung
+
+Trident kann keine Replikationsbeziehungen konfigurieren, der Speicheradministrator kann dies jedoch tun. https://docs.netapp.com/us-en/ontap/data-protection/snapmirror-svm-replication-concept.html["ONTAP SnapMirror"^] um eine SVM zu replizieren.
+
+Im Katastrophenfall können Sie die SnapMirror Ziel-SVM aktivieren, um mit der Datenbereitstellung zu beginnen.  Sie können wieder auf das primäre System umschalten, sobald die Systeme wiederhergestellt sind.
+
+.Informationen zu diesem Vorgang
+Beachten Sie Folgendes bei der Verwendung der SnapMirror SVM-Replikationsfunktion:
+
+* Sie sollten für jede SVM mit aktiviertem SVM-DR ein separates Backend erstellen.
+* Konfigurieren Sie die Speicherklassen so, dass die replizierten Backends nur bei Bedarf ausgewählt werden, um zu vermeiden, dass Volumes, die keine Replikation benötigen, auf den Backends bereitgestellt werden, die SVM-DR unterstützen.
+* Anwendungsadministratoren sollten sich der zusätzlichen Kosten und der Komplexität bewusst sein, die mit der Replikation verbunden sind, und ihren Wiederherstellungsplan sorgfältig prüfen, bevor sie mit diesem Prozess beginnen.
+
+
+
+
+=== SVM-Replikation
+
+Sie können verwendenlink:https://docs.netapp.com/us-en/ontap/data-protection/snapmirror-svm-replication-workflow-concept.html["ONTAP: SnapMirror SVM-Replikation"^] um die SVM-Replikationsbeziehung herzustellen.
+
+SnapMirror ermöglicht es Ihnen, Optionen festzulegen, um zu steuern, was repliziert werden soll.  Sie müssen wissen, welche Optionen Sie bei der Durchführung ausgewählt haben.<<SVM-Wiederherstellung mit Trident>> .
+
+* link:https://docs.netapp.com/us-en/ontap/data-protection/replicate-entire-svm-config-task.html["-identity-reserve true"^]repliziert die gesamte SVM-Konfiguration.
+* link:https://docs.netapp.com/us-en/ontap/data-protection/exclude-lifs-svm-replication-task.html["-discard-configs Netzwerk"^]Ausgenommen sind LIFs und zugehörige Netzwerkeinstellungen.
+* link:https://docs.netapp.com/us-en/ontap/data-protection/exclude-network-name-service-svm-replication-task.html["-identity-reserve false"^]Es werden lediglich die Volumes und die Sicherheitskonfiguration repliziert.
+
+
+
+
+=== SVM-Wiederherstellung mit Trident
+
+Trident erkennt SVM-Fehler nicht automatisch.  Im Katastrophenfall kann der Administrator manuell ein Trident Failover auf die neue SVM einleiten.
+
+.Schritte
+. Brechen Sie geplante und laufende SnapMirror Übertragungen ab, trennen Sie die Replikationsbeziehung, stoppen Sie die Quell-SVM und aktivieren Sie anschließend die SnapMirror Ziel-SVM.
+. Wenn Sie angegeben haben `-identity-preserve false` oder `-discard-config network` Aktualisieren Sie bei der Konfiguration Ihrer SVM-Replikation die `managementLIF` Und `dataLIF` in der Trident Backend-Definitionsdatei.
+. Bestätigen `storagePrefix` ist in der Trident Backend-Definitionsdatei vorhanden.  Dieser Parameter kann nicht geändert werden.  Auslassen `storagePrefix` wird dazu führen, dass das Backend-Update fehlschlägt.
+. Aktualisieren Sie alle erforderlichen Backends, um den neuen Ziel-SVM-Namen widerzuspiegeln, indem Sie Folgendes verwenden:
++
+[listing]
+----
+./tridentctl update backend <backend-name> -f <backend-json-file> -n <namespace>
+----
+. Wenn Sie angegeben haben `-identity-preserve false` oder `discard-config network` Sie müssen alle Anwendungs-Pods neu starten.
++
+
+NOTE: Wenn Sie angegeben haben `-identity-preserve true` Alle von Trident bereitgestellten Volumes beginnen mit der Datenbereitstellung, sobald die Ziel-SVM aktiviert ist.
+
+
+
+
+
+== Volumenreplikation und Wiederherstellung
+
+Trident kann keine SnapMirror Replikationsbeziehungen konfigurieren, der Speicheradministrator kann jedoch Folgendes verwenden:link:https://docs.netapp.com/us-en/ontap/data-protection/snapmirror-disaster-recovery-concept.html["ONTAP SnapMirror Replikation und -Wiederherstellung"^] um von Trident erstellte Volumes zu replizieren.
+
+Anschließend können Sie die wiederhergestellten Volumes in Trident importieren.link:../trident-use/vol-import.html["tridentctl volume import"] .
+
+
+NOTE: Der Import wird nicht unterstützt auf `ontap-nas-economy` , `ontap-san-economy` , oder `ontap-flexgroup-economy` Fahrer.
+
+
+
+== Snapshot-Datenschutz
+
+Sie können Daten schützen und wiederherstellen mit:
+
+* Ein externer Snapshot-Controller und CRDs zur Erstellung von Kubernetes-Volume-Snapshots von Persistent Volumes (PVs).
++
+link:../trident-use/vol-snapshots.html["Volumen-Snapshots"]
+
+* ONTAP Snapshots dienen zur Wiederherstellung des gesamten Inhalts eines Volumes oder zur Wiederherstellung einzelner Dateien oder LUNs.
++
+link:https://docs.netapp.com/us-en/ontap/data-protection/manage-local-snapshot-copies-concept.html["ONTAP Schnappschüsse"^]
+
+

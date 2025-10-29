@@ -1,0 +1,127 @@
+---
+sidebar: sidebar 
+permalink: trident-use/vol-clone-cross-namespace.html 
+keywords: volref, volume reference, clone, pvc, pv, namespace, cvna, cross-namespace, sharing, volumesnapshots 
+summary: Mit Trident können Sie neue Volumes erstellen, indem Sie vorhandene Volumes oder Volume-Snapshots aus einem anderen Namespace innerhalb desselben K8s-Clusters verwenden. 
+---
+= Volumes über Namespaces hinweg klonen
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Mit Trident können Sie neue Volumes erstellen, indem Sie vorhandene Volumes oder Volume-Snapshots aus einem anderen Namespace innerhalb desselben Kubernetes-Clusters verwenden.
+
+
+
+== Voraussetzungen
+
+Vor dem Klonen von Volumes muss sichergestellt werden, dass Quell- und Ziel-Backend vom gleichen Typ sind und die gleiche Speicherklasse aufweisen.
+
+
+NOTE: Das Klonen über Namensräume hinweg wird nur für die `ontap-san` Und `ontap-nas` Speichertreiber. Schreibgeschützte Klone werden nicht unterstützt.
+
+
+
+== Schnellstart
+
+Das Klonen von Volumes lässt sich in wenigen Schritten einrichten.
+
+.image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-1.png["Eins"]Konfigurieren Sie die Quell-PVC zum Klonen des Volumes
+[role="quick-margin-para"]
+Der Inhaber des Quell-Namespace erteilt die Berechtigung zum Zugriff auf die Daten im Quell-PVC.
+
+.image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-2.png["Zwei"]Erteilen Sie die Berechtigung zum Erstellen eines CR im Ziel-Namespace
+[role="quick-margin-para"]
+Der Clusteradministrator erteilt dem Eigentümer des Ziel-Namespace die Berechtigung, die TridentVolumeReference CR zu erstellen.
+
+.image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-3.png["Drei"]Erstellen Sie eine TridentVolumeReference im Ziel-Namespace.
+[role="quick-margin-para"]
+Der Eigentümer des Ziel-Namespace erstellt die TridentVolumeReference CR, um auf die Quell-PVC zu verweisen.
+
+.image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-4.png["Vier"]Erstellen Sie den Klon-PVC im Ziel-Namespace
+[role="quick-margin-para"]
+Der Eigentümer des Ziel-Namensraums erstellt einen PVC, um den PVC aus dem Quell-Namensraum zu klonen.
+
+
+
+== Konfigurieren Sie die Quell- und Ziel-Namespaces
+
+Um die Sicherheit zu gewährleisten, erfordert das Klonen von Volumes über Namespaces hinweg die Zusammenarbeit und das Eingreifen des Quell-Namespace-Besitzers, des Cluster-Administrators und des Ziel-Namespace-Besitzers.  Die Benutzerrolle wird in jedem Schritt festgelegt.
+
+.Schritte
+. *Quellnamespace-Inhaber:* PVC erstellen(`pvc1` ) im Quell-Namespace(`namespace1` ) die die Berechtigung zur gemeinsamen Nutzung mit dem Ziel-Namespace erteilt(`namespace2` ) unter Verwendung der `cloneToNamespace` Anmerkung.
++
+[source, yaml]
+----
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc1
+  namespace: namespace1
+  annotations:
+    trident.netapp.io/cloneToNamespace: namespace2
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: trident-csi
+  resources:
+    requests:
+      storage: 100Gi
+----
++
+Trident erstellt das PV und sein Backend-Speichervolumen.
+
++
+[NOTE]
+====
+** Sie können die PVC mithilfe einer durch Kommas getrennten Liste an mehrere Namensräume weitergeben.  Zum Beispiel, `trident.netapp.io/cloneToNamespace: namespace2,namespace3,namespace4` .
+** Sie können die Freigabe für alle Namensräume nutzen `*` .  Zum Beispiel, `trident.netapp.io/cloneToNamespace: *`
+** Sie können das PVC aktualisieren, um Folgendes einzuschließen: `cloneToNamespace` Anmerkungen jederzeit möglich.
+
+
+====
+. *Cluster-Administrator:* Stellen Sie sicher, dass die korrekte rollenbasierte Zugriffssteuerung (RBAC) eingerichtet ist, um dem Besitzer des Ziel-Namespace die Berechtigung zum Erstellen der TridentVolumeReference-CR im Ziel-Namespace zu erteilen.(`namespace2` ).
+. *Inhaber des Ziel-Namespace:* Erstellen Sie im Ziel-Namespace eine TridentVolumeReference CR, die auf den Quell-Namespace verweist. `pvc1` .
++
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentVolumeReference
+metadata:
+  name: my-first-tvr
+  namespace: namespace2
+spec:
+  pvcName: pvc1
+  pvcNamespace: namespace1
+----
+. *Inhaber des Ziel-Namensraums:* Erstellen Sie eine PVC(`pvc2` ) im Ziel-Namespace(`namespace2` ) unter Verwendung der `cloneFromPVC` oder `cloneFromSnapshot` , Und `cloneFromNamespace` Anmerkungen zur Kennzeichnung des Quell-PVC.
++
+[source, yaml]
+----
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  annotations:
+    trident.netapp.io/cloneFromPVC: pvc1
+    trident.netapp.io/cloneFromNamespace: namespace1
+  name: pvc2
+  namespace: namespace2
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: trident-csi
+  resources:
+    requests:
+      storage: 100Gi
+----
+
+
+
+
+== Einschränkungen
+
+* Für PVCs, die mit ontap-nas-economy-Treibern bereitgestellt wurden, werden schreibgeschützte Klone nicht unterstützt.
+

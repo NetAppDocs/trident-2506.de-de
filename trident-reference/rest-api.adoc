@@ -1,0 +1,66 @@
+---
+sidebar: sidebar 
+permalink: trident-reference/rest-api.html 
+keywords: rest api, get, post, json, object, backends 
+summary: Sie können den REST-Endpunkt direkt verwenden, wenn Sie lieber mit der REST-API von Trident interagieren möchten. 
+---
+= Trident REST-API
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Währendlink:tridentctl.html["tridentctl-Befehle und Optionen"] Dies ist die einfachste Möglichkeit, mit der Trident REST API zu interagieren; Sie können aber auch direkt den REST-Endpunkt verwenden, wenn Sie dies bevorzugen.
+
+
+
+== Wann sollte die REST-API verwendet werden?
+
+Die REST-API ist nützlich für fortgeschrittene Installationen, die Trident als eigenständige Binärdatei in Nicht-Kubernetes-Bereitstellungen verwenden.
+
+Für mehr Sicherheit, das Trident `REST API` Beim Ausführen innerhalb eines Pods ist die Ausführung standardmäßig auf localhost beschränkt.  Um dieses Verhalten zu ändern, müssen Sie die Einstellungen von Trident anpassen. `-address` Argument in seiner Pod-Konfiguration.
+
+
+
+== Verwendung der REST-API
+
+Beispiele für den Aufruf dieser APIs erhalten Sie durch Übergeben des Debug-Logs.(`-d` ) Flagge.  Weitere Informationen finden Sie unterlink:../trident-managing-k8s/tridentctl.html["Trident mit tridentctl verwalten"] .
+
+Die API funktioniert wie folgt:
+
+
+
+=== ERHALTEN
+
+`GET <trident-address>/trident/v1/<object-type>`:: Listet alle Objekte dieses Typs auf.
+`GET <trident-address>/trident/v1/<object-type>/<object-name>`:: Ruft die Details des angegebenen Objekts ab.
+
+
+
+
+=== POST
+
+`POST <trident-address>/trident/v1/<object-type>`:: Erzeugt ein Objekt des angegebenen Typs.
++
+--
+* Für die Erstellung des Objekts ist eine JSON-Konfiguration erforderlich.  Die Spezifikation der einzelnen Objekttypen finden Sie unterlink:../trident-managing-k8s/tridentctl.html["Trident mit tridentctl verwalten"] .
+* Existiert das Objekt bereits, verhält es sich unterschiedlich: Die Backends aktualisieren das bestehende Objekt, während bei allen anderen Objekttypen der Vorgang fehlschlägt.
+
+
+--
+
+
+
+
+=== LÖSCHEN
+
+`DELETE <trident-address>/trident/v1/<object-type>/<object-name>`:: Löscht die angegebene Ressource.
++
+--
+
+NOTE: Mit Backends oder Speicherklassen verknüpfte Volumes bleiben bestehen; diese müssen separat gelöscht werden.  Weitere Informationen finden Sie unterlink:../trident-managing-k8s/tridentctl.html["Trident mit tridentctl verwalten"] .
+
+--
+

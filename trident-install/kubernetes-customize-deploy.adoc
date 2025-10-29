@@ -1,0 +1,311 @@
+---
+sidebar: sidebar 
+permalink: trident-get-started/kubernetes-customize-deploy.html 
+keywords: deploy, trident, methods, operator, tridentctl, helm, attributes, customize, tridentorchestrator, smb, windows 
+summary: 'Der Trident -Operator ermöglicht es Ihnen, die Installation von Trident mithilfe der Attribute in der `TridentOrchestrator` Spezifikation.' 
+---
+= Anpassung der Trident -Bedieninstallation
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Der Trident -Operator ermöglicht die Anpassung der Trident Installation mithilfe der Attribute in der `TridentOrchestrator` Spezifikation.  Wenn Sie die Installation über das hinaus anpassen möchten, was `TridentOrchestrator` Wenn Argumente dies zulassen, sollten Sie die Verwendung in Betracht ziehen. `tridentctl` um benutzerdefinierte YAML-Manifeste zu generieren, die nach Bedarf angepasst werden können.
+
+
+
+== Controller-Pods und Node-Pods verstehen
+
+Trident läuft als ein einzelner Controller-Pod sowie als ein Node-Pod auf jedem Worker-Knoten im Cluster.  Der Node-Pod muss auf jedem Host ausgeführt werden, auf dem Sie möglicherweise ein Trident -Volume einbinden möchten.
+
+Kuberneteslink:https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/["Knotenselektoren"^] Undlink:https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/["Toleranzen und Verunreinigungen"^] werden verwendet, um einen Pod so einzuschränken, dass er auf einem bestimmten oder bevorzugten Knoten ausgeführt wird.  Verwendung des `ControllerPlugin` und `NodePlugin` Sie können Einschränkungen und Überschreibungen festlegen.
+
+* Das Controller-Plugin übernimmt die Bereitstellung und Verwaltung von Volumes, wie z. B. Snapshots und Größenänderungen.
+* Das Node-Plugin kümmert sich um die Anbindung des Speichers an den Knoten.
+
+
+
+
+== Konfigurationsoptionen
+
+
+WARNING: `spec.namespace`wird angegeben in `TridentOrchestrator` um den Namensraum zu kennzeichnen, in dem Trident installiert ist.  Dieser Parameter *kann nach der Installation von Trident nicht mehr aktualisiert werden*.  Der Versuch dazu führt dazu, dass `TridentOrchestrator` Status ändern auf `Failed` .  Trident ist nicht für die Migration zwischen Namensräumen vorgesehen.
+
+Diese Tabelle enthält Details `TridentOrchestrator` Attribute.
+
+[cols="1,2,1"]
+|===
+| Parameter | Beschreibung | Standard 
+
+
+| `namespace` | Namespace, in dem Trident installiert werden soll | `"default"` 
+
+
+| `debug` | Debugging für Trident aktivieren | `false` 
+
+
+| `enableForceDetach` | `ontap-san`, `ontap-san-economy` , `ontap-nas` , Und `ontap-nas-economy` nur.  Funktioniert mit Kubernetes Non-Graceful Node Shutdown (NGNS), um Cluster-Administratoren die Möglichkeit zu geben, Workloads mit eingebundenen Volumes sicher auf neue Knoten zu migrieren, falls ein Knoten in einen instabilen Zustand gerät. | `false` 
+
+
+| `windows` | Einstellung auf `true` Ermöglicht die Installation auf Windows-Worker-Knoten. | `false` 
+
+
+| `cloudProvider`  a| 
+Auf einstellen `"Azure"` bei der Verwendung von verwalteten Identitäten oder einer Cloud-Identität auf einem AKS-Cluster.  Auf einstellen `"AWS"` bei Verwendung einer Cloud-Identität auf einem EKS-Cluster.  Auf einstellen `"GCP"` bei Verwendung einer Cloud-Identität auf einem GKE-Cluster.
+| `""` 
+
+
+| `cloudIdentity`  a| 
+Setzen Sie die Workload-Identität auf ("azure.workload.identity/client-id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"), wenn Sie Cloud Identity auf einem AKS-Cluster verwenden.  Setzen Sie die AWS IAM-Rolle auf ("eks.amazonaws.com/role-arn: arn:aws:iam::123456:role/trident-role"), wenn Sie Cloud Identity auf einem EKS-Cluster verwenden.  Stellen Sie die Cloud-Identität auf ("iam.gke.io/gcp-service-account: xxxx@mygcpproject.iam.gserviceaccount.com") ein, wenn Sie die Cloud-Identität auf einem GKE-Cluster verwenden.
+| `""` 
+
+
+| `IPv6` | Trident über IPv6 installieren | FALSCH 
+
+
+| `k8sTimeout`  a| 
+Zeitüberschreitung für Kubernetes-Operationen.
+
+
+NOTE: Der `k8sTimeout` Dieser Parameter ist nur für die Installation von Trident anwendbar.
+| `180sec` 
+
+
+| `silenceAutosupport` | Senden Sie keine Autosupport-Bundles automatisch an NetApp. | `false` 
+
+
+| `autosupportImage` | Das Container-Image für Autosupport-Telemetrie | `"netapp/trident-autosupport:25.06"` 
+
+
+| `autosupportProxy` | Die Adresse/der Port eines Proxys zum Senden von Autosupport-Telemetriedaten | `"http://proxy.example.com:8888"` 
+
+
+| `uninstall` | Eine Flagge, die zum Deinstallieren von Trident verwendet wird. | `false` 
+
+
+| `logFormat` | Zu verwendendes Trident Protokollierungsformat [text,json] | `"text"` 
+
+
+| `tridentImage` | Trident Bild zum Installieren | `"netapp/trident:25.06"` 
+
+
+| `imageRegistry` | Pfad zur internen Registry im Format
+`<registry FQDN>[:port][/subpath]` | `"registry.k8s.io"` 
+
+
+| `kubeletDir` | Pfad zum kubelet-Verzeichnis auf dem Host | `"/var/lib/kubelet"` 
+
+
+| `wipeout` | Eine Liste der Ressourcen, die gelöscht werden müssen, um Trident vollständig zu entfernen. |  
+
+
+| `imagePullSecrets` | Geheimnisse zum Abrufen von Bildern aus einer internen Registrierung |  
+
+
+| `imagePullPolicy` | Legt die Image-Pull-Richtlinie für den Trident -Operator fest.  Gültige Werte sind:
+`Always` um immer das Bild zu ziehen. 
+`IfNotPresent` Das Bild wird nur dann abgerufen, wenn es auf dem Knoten noch nicht vorhanden ist. 
+`Never` Das Bild niemals entfernen. | `IfNotPresent` 
+
+
+| `controllerPluginNodeSelector` | Zusätzliche Knotenselektoren für Pods.  Folgt dem gleichen Format wie `pod.spec.nodeSelector` . | Kein Standardwert; optional 
+
+
+| `controllerPluginTolerations` | Überschreibt die Kubernetes-Toleranzen für Pods.  Folgt dem gleichen Format wie `pod.spec.Tolerations` . | Kein Standardwert; optional 
+
+
+| `nodePluginNodeSelector` | Zusätzliche Knotenselektoren für Pods.  Folgt dem gleichen Format wie `pod.spec.nodeSelector` . | Kein Standardwert; optional 
+
+
+| `nodePluginTolerations` | Überschreibt die Kubernetes-Toleranzen für Pods.  Folgt dem gleichen Format wie `pod.spec.Tolerations` . | Kein Standardwert; optional 
+
+
+| `nodePrep`  a| 
+Ermöglicht Trident , die Knoten des Kubernetes-Clusters für die Verwaltung von Volumes mithilfe des angegebenen Datenspeicherprotokolls vorzubereiten. *Momentan, `iscsi` ist der einzige unterstützte Wert.*
+
+
+NOTE: Ab OpenShift 4.19 ist die für diese Funktion unterstützte Mindestversion von Trident 25.06.1.
+|  
+
+
+| `k8sAPIQPS`  a| 
+Das vom Controller bei der Kommunikation mit dem Kubernetes-API-Server verwendete Limit für Abfragen pro Sekunde (QPS). Der Burst-Wert wird automatisch basierend auf dem QPS-Wert festgelegt.
+| `100`; optional 
+
+
+| `enableConcurrency`  a| 
+Ermöglicht gleichzeitige Trident -Controller-Operationen für verbesserten Durchsatz.
+
+
+NOTE: *Technische Vorschau*: Diese Funktion ist in NetApp Trident 25.06 experimentell und unterstützt derzeit begrenzte parallele Workflows mit dem ONTAP-SAN-Treiber (iSCSI- und FCP-Protokolle).
+| FALSCH 
+|===
+
+NOTE: Weitere Informationen zur Formatierung von Pod-Parametern finden Sie unterlink:https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/["Pods zu Knoten zuweisen"^] .
+
+
+
+=== Details zum erzwungenen Abtrennen
+
+Die Option „Zwangstrennung“ ist verfügbar für `ontap-san` , `ontap-san-economy` , `ontap-nas` , Und `ontap-nas-economy` nur. Bevor Sie die erzwungene Trennung aktivieren, muss das Non-Graceful Node Shutdown (NGNS) im Kubernetes-Cluster aktiviert werden. NGNS ist standardmäßig für Kubernetes 1.28 und höher aktiviert.  Weitere Informationen finden Sie unterlink:https://kubernetes.io/docs/concepts/cluster-administration/node-shutdown/#non-graceful-node-shutdown["Kubernetes: Nicht ordnungsgemäßes Herunterfahren eines Knotens"^] .
+
+
+NOTE: Bei der Verwendung des `ontap-nas` oder `ontap-nas-economy` Treiber, Sie müssen die `autoExportPolicy` Parameter in der Backend-Konfiguration zu `true` damit Trident den Zugriff vom Kubernetes-Knoten mit der angewendeten Taint-Markierung mithilfe verwalteter Exportrichtlinien einschränken kann.
+
+
+WARNING: Da Trident auf Kubernetes NGNS basiert, entfernen Sie es nicht. `out-of-service` Beeinträchtigungen durch einen fehlerhaften Knoten, bis alle nicht tolerierbaren Arbeitslasten neu geplant sind.  Das leichtfertige Anwenden oder Entfernen der Markierung kann den Schutz der Backend-Daten gefährden.
+
+Wenn der Kubernetes-Clusteradministrator die `node.kubernetes.io/out-of-service=nodeshutdown:NoExecute` Verunreinigung des Knotens und `enableForceDetach` ist eingestellt auf `true` Trident ermittelt den Knotenstatus und:
+
+. Den Backend-E/A-Zugriff auf die an diesen Knoten angeschlossenen Volumes einstellen.
+. Markieren Sie das Trident -Knotenobjekt als `dirty` (Nicht geeignet für Neuveröffentlichungen).
++
+
+NOTE: Der Trident -Controller lehnt neue Veröffentlichungsanforderungen für Volumes so lange ab, bis der Knoten erneut qualifiziert ist (nachdem er als markiert wurde). `dirty` ) durch den Trident -Knotenpod.  Alle Workloads, die mit einem eingebundenen PVC geplant sind (auch nachdem der Clusterknoten fehlerfrei und bereit ist), werden erst akzeptiert, wenn Trident den Knoten verifizieren konnte. `clean` (sicher für Neuveröffentlichungen).
+
+
+
+Sobald der Zustand des Knotens wiederhergestellt und die Beschädigung entfernt ist, wird Trident Folgendes tun:
+
+. Identifizieren und bereinigen Sie veraltete veröffentlichte Pfade auf dem Knoten.
+. Wenn sich der Knoten in einem `cleanable` Der Status (die Außerbetriebnahme-Kennzeichnung wurde entfernt und der Knoten befindet sich im Zustand …) `Ready` Wenn alle veralteten, veröffentlichten Pfade bereinigt sind und Trident den Knoten wieder zulässt, wird Trident ihn wieder zulassen. `clean` und die Veröffentlichung neuer Bände auf dem Knoten zu ermöglichen.
+
+
+
+
+== Beispielkonfigurationen
+
+Sie können die Attribute in verwenden<<Konfigurationsoptionen>> bei der Definition `TridentOrchestrator` um Ihre Installation individuell anzupassen.
+
+.Grundlegende benutzerdefinierte Konfiguration
+[%collapsible]
+====
+Dieses Beispiel wurde nach dem Ausführen des `cat deploy/crds/tridentorchestrator_cr_imagepullsecrets.yaml` Der Befehl stellt eine einfache benutzerdefinierte Installation dar:
+
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentOrchestrator
+metadata:
+  name: trident
+spec:
+  debug: true
+  namespace: trident
+  imagePullSecrets:
+  - thisisasecret
+----
+====
+.Knotenselektoren
+[%collapsible]
+====
+Dieses Beispiel installiert Trident mit Knotenselektoren.
+
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentOrchestrator
+metadata:
+  name: trident
+spec:
+  debug: true
+  namespace: trident
+  controllerPluginNodeSelector:
+    nodetype: master
+  nodePluginNodeSelector:
+    storage: netapp
+----
+====
+.Windows-Worker-Knoten
+[%collapsible]
+====
+Dieses Beispiel wurde nach dem Ausführen des `cat deploy/crds/tridentorchestrator_cr.yaml` Befehl, installiert Trident auf einem Windows-Worker-Knoten.
+
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentOrchestrator
+metadata:
+  name: trident
+spec:
+  debug: true
+  namespace: trident
+  windows: true
+----
+====
+.Verwaltete Identitäten auf einem AKS-Cluster
+[%collapsible]
+====
+Dieses Beispiel installiert Trident, um verwaltete Identitäten auf einem AKS-Cluster zu aktivieren.
+
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentOrchestrator
+metadata:
+  name: trident
+spec:
+  debug: true
+  namespace: trident
+  cloudProvider: "Azure"
+----
+====
+.Cloud-Identität auf einem AKS-Cluster
+[%collapsible]
+====
+Dieses Beispiel installiert Trident zur Verwendung mit einer Cloud-Identität auf einem AKS-Cluster.
+
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentOrchestrator
+metadata:
+  name: trident
+spec:
+  debug: true
+  namespace: trident
+  cloudProvider: "Azure"
+  cloudIdentity: 'azure.workload.identity/client-id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx'
+
+----
+====
+.Cloud-Identität auf einem EKS-Cluster
+[%collapsible]
+====
+Dieses Beispiel installiert Trident zur Verwendung mit einer Cloud-Identität auf einem AKS-Cluster.
+
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentOrchestrator
+metadata:
+  name: trident
+spec:
+  debug: true
+  namespace: trident
+  cloudProvider: "AWS"
+  cloudIdentity: "'eks.amazonaws.com/role-arn: arn:aws:iam::123456:role/trident-role'"
+----
+====
+.Cloud-Identität für GKE
+[%collapsible]
+====
+Dieses Beispiel installiert Trident zur Verwendung mit einer Cloud-Identität auf einem GKE-Cluster.
+
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-gcp-gcnv
+spec:
+  version: 1
+  storageDriverName: google-cloud-netapp-volumes
+  projectNumber: '012345678901'
+  network: gcnv-network
+  location: us-west2
+  serviceLevel: Premium
+  storagePool: pool-premium1
+----
+====

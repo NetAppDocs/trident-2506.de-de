@@ -1,0 +1,27 @@
+---
+sidebar: sidebar 
+permalink: trident-concepts/provisioning.html 
+keywords: provisioning, Trident 
+summary: Die Bereitstellung in Trident umfasst zwei Hauptphasen.  In der ersten Phase wird eine Speicherklasse mit den passenden Backend-Speicherpools verknüpft. Dies erfolgt als notwendige Vorbereitung vor der Bereitstellung.  Die zweite Phase umfasst die eigentliche Volume-Erstellung und erfordert die Auswahl eines Speicherpools aus denjenigen, die der Speicherklasse des ausstehenden Volumes zugeordnet sind. 
+---
+= Bereitstellung
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Die Bereitstellung in Trident umfasst zwei Hauptphasen.  In der ersten Phase wird eine Speicherklasse mit den passenden Backend-Speicherpools verknüpft. Dies erfolgt als notwendige Vorbereitung vor der Bereitstellung.  Die zweite Phase umfasst die eigentliche Volume-Erstellung und erfordert die Auswahl eines Speicherpools aus denjenigen, die der Speicherklasse des ausstehenden Volumes zugeordnet sind.
+
+
+
+== Speicherklassenzuordnung
+
+Die Zuordnung von Backend-Speicherpools zu einer Speicherklasse basiert sowohl auf den angeforderten Attributen der Speicherklasse als auch auf deren `storagePools` , `additionalStoragePools` , Und `excludeStoragePools` Listen.  Wenn Sie eine Speicherklasse erstellen, vergleicht Trident die von jedem seiner Backends angebotenen Attribute und Pools mit denjenigen, die von der Speicherklasse angefordert werden.  Wenn die Attribute und der Name eines Speicherpools mit allen angeforderten Attributen und Poolnamen übereinstimmen, fügt Trident diesen Speicherpool der Menge der geeigneten Speicherpools für diese Speicherklasse hinzu.  Darüber hinaus fügt Trident alle im Verzeichnis aufgeführten Speicherpools hinzu. `additionalStoragePools` Fügen Sie die Elemente dieser Liste hinzu, auch wenn deren Attribute nicht alle oder keine der angeforderten Attribute der Speicherklasse erfüllen.  Sie sollten die `excludeStoragePools` Liste zum Überschreiben und Entfernen von Speicherpools für eine Speicherklasse.  Trident führt bei jedem Hinzufügen eines neuen Backends einen ähnlichen Prozess durch, indem es prüft, ob dessen Speicherpools denen der vorhandenen Speicherklassen entsprechen, und alle als ausgeschlossen markierten entfernt.
+
+
+
+== Volumenerzeugung
+
+Trident verwendet dann die Verknüpfungen zwischen Speicherklassen und Speicherpools, um zu bestimmen, wo Datenträger bereitgestellt werden sollen.  Wenn Sie ein Volume erstellen, ermittelt Trident zunächst die Speicherpools für die Speicherklasse dieses Volumes. Wenn Sie ein Protokoll für das Volume angeben, entfernt Trident anschließend diejenigen Speicherpools, die das angeforderte Protokoll nicht bereitstellen können (beispielsweise kann ein NetApp HCI/ SolidFire Backend kein dateibasiertes Volume bereitstellen, während ein ONTAP NAS-Backend kein blockbasiertes Volume bereitstellen kann).  Trident randomisiert die Reihenfolge dieser resultierenden Menge, um eine gleichmäßige Verteilung der Volumes zu ermöglichen, und durchläuft sie dann, um das Volume nacheinander auf jedem Speicherpool bereitzustellen.  Wenn ein Test erfolgreich ist, gibt die Funktion eine positive Rückmeldung und protokolliert dabei alle aufgetretenen Fehler.  Trident gibt nur dann einen Fehler zurück, wenn die Bereitstellung auf *allen* verfügbaren Speicherpools für die angeforderte Speicherklasse und das Protokoll fehlschlägt.

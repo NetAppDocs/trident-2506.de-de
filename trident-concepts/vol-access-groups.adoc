@@ -1,0 +1,30 @@
+---
+sidebar: sidebar 
+permalink: trident-concepts/vol-access-groups.html 
+keywords: volume access groups, element, solidfire, chap, Trident, hci, netapp hci, storage system, access volumes, 
+summary: Erfahren Sie mehr darüber, wie Trident Volumenzugriffsgruppen verwendet. 
+---
+= Volumenzugriffsgruppen
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Erfahren Sie mehr darüber, wie Trident verwendet https://docs.netapp.com/us-en/element-software/concepts/concept_solidfire_concepts_volume_access_groups.html["Volumenzugriffsgruppen"^] .
+
+
+NOTE: Ignorieren Sie diesen Abschnitt, wenn Sie CHAP verwenden. Dies wird empfohlen, um die Verwaltung zu vereinfachen und die unten beschriebene Skalierungsgrenze zu vermeiden.  Wenn Sie Trident im CSI-Modus verwenden, können Sie diesen Abschnitt ignorieren.  Trident verwendet CHAP, wenn es als erweiterter CSI-Provisioner installiert wird.
+
+
+
+== Erfahren Sie mehr über Volumenzugriffsgruppen
+
+Trident kann Volume-Zugriffsgruppen verwenden, um den Zugriff auf die von ihm bereitgestellten Volumes zu steuern.  Wenn CHAP deaktiviert ist, erwartet es, eine Zugriffsgruppe namens „…“ zu finden. `trident` es sei denn, Sie geben in der Konfiguration eine oder mehrere Zugriffsgruppen-IDs an.
+
+Während Trident neue Volumes den konfigurierten Zugriffsgruppen zuordnet, erstellt oder verwaltet es selbst keine Zugriffsgruppen.  Die Zugriffsgruppen müssen existieren, bevor das Speicher-Backend zu Trident hinzugefügt wird, und sie müssen die iSCSI-IQNs von jedem Knoten im Kubernetes-Cluster enthalten, der potenziell die von diesem Backend bereitgestellten Volumes einbinden könnte.  In den meisten Installationen umfasst dies jeden Worker-Knoten im Cluster.
+
+Für Kubernetes-Cluster mit mehr als 64 Knoten sollten Sie mehrere Zugriffsgruppen verwenden.  Jede Zugriffsgruppe kann bis zu 64 IQNs enthalten, und jedes Volume kann zu vier Zugriffsgruppen gehören.  Bei der Konfiguration von maximal vier Zugriffsgruppen kann jeder Knoten in einem Cluster mit bis zu 256 Knoten auf jedes beliebige Volume zugreifen.  Die aktuellsten Beschränkungen für Datenträgerzugriffsgruppen finden Sie unter https://docs.netapp.com/us-en/element-software/concepts/concept_solidfire_concepts_volume_access_groups.html["hier,"^] .
+
+Wenn Sie die Konfiguration von einer Konfiguration ändern, die die Standardeinstellungen verwendet. `trident` Zugriffsgruppe auf eine Gruppe, die auch andere verwendet, einschließlich der ID für die `trident` Zugriffsgruppe in der Liste.

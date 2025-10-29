@@ -1,0 +1,31 @@
+---
+sidebar: sidebar 
+permalink: trident-reco/deploy-reco.html 
+keywords: deployment, deploy, trident, namespace 
+summary: Beachten Sie bei der Bereitstellung von Trident die hier aufgeführten Empfehlungen. 
+---
+= Einsatz
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Beachten Sie bei der Bereitstellung von Trident die hier aufgeführten Empfehlungen.
+
+
+
+== In einem dedizierten Namensraum bereitstellen
+
+https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/["Namensräume"^]Sie sorgen für eine administrative Trennung zwischen verschiedenen Anwendungen und stellen ein Hindernis für die gemeinsame Nutzung von Ressourcen dar.  Beispielsweise kann ein PVC aus einem Namespace nicht aus einem anderen Namespace verwendet werden.  Trident stellt PV-Ressourcen für alle Namespaces im Kubernetes-Cluster bereit und nutzt daher ein Servicekonto mit erhöhten Berechtigungen.
+
+Darüber hinaus könnte der Zugriff auf den Trident Pod einem Benutzer den Zugriff auf Anmeldeinformationen des Speichersystems und andere sensible Informationen ermöglichen.  Es ist wichtig sicherzustellen, dass Anwendungsbenutzer und Verwaltungsanwendungen keinen Zugriff auf die Trident -Objektdefinitionen oder die Pods selbst haben.
+
+
+
+== Nutzen Sie Quoten und Bereichsgrenzen, um den Speicherverbrauch zu kontrollieren.
+
+Kubernetes verfügt über zwei Funktionen, die in Kombination einen leistungsstarken Mechanismus zur Begrenzung des Ressourcenverbrauchs von Anwendungen bieten.  Der https://kubernetes.io/docs/concepts/policy/resource-quotas/#storage-resource-quota["Speicherquotenmechanismus"^] Ermöglicht dem Administrator die Implementierung globaler und speicherklassenspezifischer Kapazitäts- und Objektanzahlbeschränkungen pro Namespace.  Des Weiteren, unter Verwendung eines https://kubernetes.io/docs/tasks/administer-cluster/limit-storage-consumption/#limitrange-to-limit-requests-for-storage["Reichweitenbegrenzung"^] stellt sicher, dass die PVC-Anfragen sowohl einen minimalen als auch einen maximalen Wert nicht überschreiten, bevor die Anfrage an den Provisionierer weitergeleitet wird.
+
+Diese Werte werden pro Namespace definiert, was bedeutet, dass für jeden Namespace Werte definiert sein sollten, die seinen Ressourcenanforderungen entsprechen.  Hier finden Sie weitere Informationen zu https://netapp.io/2017/06/09/self-provisioning-storage-kubernetes-without-worry["wie man Quoten optimal nutzt"^] .
