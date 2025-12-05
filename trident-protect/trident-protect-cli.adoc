@@ -2,7 +2,7 @@
 sidebar: sidebar 
 permalink: trident-protect/trident-protect-cli.html 
 keywords: trident, protect, command line utility, cli, netapp, custom, resources 
-summary: Mit dem Befehl protectctl können Sie benutzerdefinierte Trident Protect-Ressourcen erstellen und mit ihnen interagieren. 
+summary: Mit dem Befehl protectctl können Sie benutzerdefinierte Ressourcen von Trident Protect erstellen und mit ihnen interagieren. 
 ---
 = Installieren Sie das Trident Protect CLI-Plugin.
 :hardbreaks:
@@ -14,7 +14,7 @@ summary: Mit dem Befehl protectctl können Sie benutzerdefinierte Trident Protec
 
 
 [role="lead"]
-Sie können das Trident Protect-Befehlszeilen-Plugin verwenden, das eine Erweiterung von Trident ist. `tridentctl` Hilfsprogramm zum Erstellen und Interagieren mit Trident Protect Custom Resources (CRs).
+Sie können das Trident Protect-Befehlszeilen-Plugin verwenden, das eine Erweiterung von Trident ist. `tridentctl` Hilfsprogramm zum Erstellen und Interagieren mit benutzerdefinierten Ressourcen (CRs) von Trident Protect.
 
 
 

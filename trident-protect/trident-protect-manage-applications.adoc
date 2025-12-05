@@ -2,7 +2,7 @@
 sidebar: sidebar 
 permalink: trident-protect/trident-protect-manage-applications.html 
 keywords: appvault, data protection, custom resource, namespace, application, cluster 
-summary: Sie können Trident protect über eine Anwendung informieren, die Sie verwalten möchten, indem Sie eine Anwendungs-CR und eine zugehörige AppVault-CR erstellen. 
+summary: Sie können Trident Protect über eine Anwendung informieren, die Sie verwalten möchten, indem Sie eine Anwendungs-CR und eine zugehörige AppVault-CR erstellen. 
 ---
 = Definieren Sie eine Anwendung für die Verwaltung mit Trident Protect.
 :hardbreaks:
@@ -20,13 +20,13 @@ Sie können eine Anwendung, die Sie mit Trident Protect verwalten möchten, defi
 
 == Erstellen Sie eine AppVault CR
 
-Sie müssen einen AppVault CR erstellen, der bei der Durchführung von Datenschutzoperationen an der Anwendung verwendet wird, und der AppVault CR muss sich auf dem Cluster befinden, auf dem Trident Protect installiert ist.  Die AppVault-CR ist spezifisch für Ihre Umgebung; Beispiele für AppVault-CRs finden Sie unterlink:trident-protect-appvault-custom-resources.html["AppVault-Benutzerressourcen."]
+Sie müssen einen AppVault CR erstellen, der bei der Durchführung von Datenschutzoperationen an der Anwendung verwendet wird, und der AppVault CR muss sich auf dem Cluster befinden, auf dem Trident Protect installiert ist. Die AppVault-CR ist spezifisch für Ihre Umgebung; Beispiele für AppVault-CRs finden Sie unterlink:trident-protect-appvault-custom-resources.html["AppVault-Benutzerressourcen."]
 
 
 
 == Definieren einer Anwendung
 
-Sie müssen jede Anwendung definieren, die Sie mit Trident Protect verwalten möchten.  Sie können eine Anwendung zur Verwaltung definieren, indem Sie entweder manuell eine Anwendungs-CR erstellen oder die Trident Protect CLI verwenden.
+Sie müssen jede Anwendung definieren, die Sie mit Trident Protect verwalten möchten. Sie können eine Anwendung zur Verwaltung definieren, indem Sie entweder manuell eine Anwendungs-CR erstellen oder die Trident Protect CLI verwenden.
 
 [role="tabbed-block"]
 ====
@@ -46,7 +46,7 @@ Sie müssen jede Anwendung definieren, die Sie mit Trident Protect verwalten mö
 **** *labelSelector*: (_Optional_) Filtert die clusterweiten Ressourcen anhand ihrer Labels.
 
 
-*** *metadata.annotations.protect.trident.netapp.io/skip-vm-freeze*: (_Optional_) Diese Annotation ist nur für Anwendungen anwendbar, die von virtuellen Maschinen definiert werden, wie z. B. in KubeVirt-Umgebungen, wo Dateisystem-Freezes vor Snapshots auftreten.  Legen Sie fest, ob diese Anwendung während einer Snapshot-Erstellung auf das Dateisystem schreiben darf.  Wenn diese Option auf „true“ gesetzt ist, ignoriert die Anwendung die globale Einstellung und kann während eines Snapshots auf das Dateisystem schreiben.  Wenn der Wert auf „false“ gesetzt ist, ignoriert die Anwendung die globale Einstellung und das Dateisystem wird während eines Snapshots eingefroren.  Wird dies angegeben, die Anwendung aber keine virtuellen Maschinen in der Anwendungsdefinition aufweist, wird die Annotation ignoriert.  Sofern nichts anderes angegeben ist, gilt die folgende Vorgehensweise:link:trident-protect-requirements.html#protecting-data-with-kubevirt-vms["globale Trident Schutzeinstellung zum Einfrieren"] .
+*** *metadata.annotations.protect.trident.netapp.io/skip-vm-freeze*: (_Optional_) Diese Annotation ist nur für Anwendungen anwendbar, die von virtuellen Maschinen definiert werden, wie z. B. in KubeVirt-Umgebungen, wo Dateisystem-Freezes vor Snapshots auftreten. Legen Sie fest, ob diese Anwendung während einer Snapshot-Erstellung auf das Dateisystem schreiben darf. Wenn diese Option auf „true“ gesetzt ist, ignoriert die Anwendung die globale Einstellung und kann während eines Snapshots auf das Dateisystem schreiben. Wenn der Wert auf „false“ gesetzt ist, ignoriert die Anwendung die globale Einstellung und das Dateisystem wird während eines Snapshots eingefroren. Wird dies angegeben, die Anwendung aber keine virtuellen Maschinen in der Anwendungsdefinition aufweist, wird die Annotation ignoriert. Sofern nichts anderes angegeben ist, gilt die folgende Vorgehensweise:link:trident-protect-requirements.html#protecting-data-with-kubevirt-vms["Globale Trident Protect-Einfrierungseinstellung"] .
 +
 [NOTE]
 ====
@@ -153,7 +153,7 @@ kubectl apply -f maria-app.yaml
 .Schritte
 . Erstellen und wenden Sie die Anwendungsdefinition anhand eines der folgenden Beispiele an und ersetzen Sie die Werte in Klammern durch Informationen aus Ihrer Umgebung.  Sie können Namespaces und Ressourcen in die Anwendungsdefinition einbinden, indem Sie kommagetrennte Listen mit den in den Beispielen gezeigten Argumenten verwenden.
 +
-Optional können Sie beim Erstellen einer App eine Annotation verwenden, um anzugeben, ob die Anwendung während eines Snapshots auf das Dateisystem schreiben darf.  Dies gilt nur für Anwendungen, die von virtuellen Maschinen definiert werden, wie beispielsweise in KubeVirt-Umgebungen, wo Dateisystem-Freezes vor Snapshots auftreten.  Wenn Sie die Annotation auf `true` Die Anwendung ignoriert die globale Einstellung und kann während eines Snapshots in das Dateisystem schreiben.  Wenn Sie es einstellen auf `false` Die Anwendung ignoriert die globale Einstellung und das Dateisystem wird während eines Snapshots eingefroren.  Wenn Sie die Annotation verwenden, die Anwendung aber keine virtuellen Maschinen in der Anwendungsdefinition aufweist, wird die Annotation ignoriert.  Wenn Sie die Annotation nicht verwenden, folgt die Anwendung dem Standard.link:trident-protect-requirements.html#protecting-data-with-kubevirt-vms["globale Trident Schutzeinstellung zum Einfrieren"] .
+Optional können Sie beim Erstellen einer App eine Annotation verwenden, um anzugeben, ob die Anwendung während eines Snapshots auf das Dateisystem schreiben darf. Dies gilt nur für Anwendungen, die von virtuellen Maschinen definiert werden, wie beispielsweise in KubeVirt-Umgebungen, wo Dateisystem-Freezes vor Snapshots auftreten. Wenn Sie die Annotation auf `true` Die Anwendung ignoriert die globale Einstellung und kann während eines Snapshots in das Dateisystem schreiben. Wenn Sie es einstellen auf `false` Die Anwendung ignoriert die globale Einstellung und das Dateisystem wird während eines Snapshots eingefroren. Wenn Sie die Annotation verwenden, die Anwendung aber keine virtuellen Maschinen in der Anwendungsdefinition aufweist, wird die Annotation ignoriert. Wenn Sie die Annotation nicht verwenden, folgt die Anwendung dem Standard.link:trident-protect-requirements.html#protecting-data-with-kubevirt-vms["Globale Trident Protect-Einfrierungseinstellung"] .
 
 +
 Um die Annotation bei der Erstellung einer Anwendung über die CLI anzugeben, können Sie Folgendes verwenden: `--annotation` Flagge.

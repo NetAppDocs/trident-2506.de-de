@@ -4,25 +4,25 @@ title: Schützen Sie Ihre Anwendungen mit Trident Protect.
 entries:
 - title: Erfahren Sie mehr über Trident Protect.
   url: "/trident-protect/learn-about-trident-protect.html"
-- title: Installieren Sie Trident Protect.
+- title: Installieren Sie Trident Protect
   entries:
-  - title: Trident Schutzanforderungen
+  - title: Anforderungen von Trident Protect
     url: "/trident-protect/trident-protect-requirements.html"
-  - title: Installieren Sie Trident Protect.
+  - title: Installieren Sie Trident Protect
     url: "/trident-protect/trident-protect-installation.html"
   - title: Installieren Sie das Trident Protect CLI-Plugin.
     url: "/trident-protect/trident-protect-cli.html"
-  - title: Trident Schutzinstallation anpassen
+  - title: Trident Protect-Installation anpassen
     url: "/trident-protect/trident-protect-customize-installation.html"
-- title: Trident Schutz verwalten
+- title: Trident Protect verwalten
   entries:
   - title: Autorisierung und Zugriffskontrolle verwalten
     url: "/trident-protect/manage-authorization-access-control.html"
-  - title: Trident überwachen und Ressourcen schützen
+  - title: Überwachen Sie die Ressourcen von Trident Protect.
     url: "/trident-protect/monitor-trident-protect-resources.html"
-  - title: Generieren Sie ein Trident Protect Support-Paket
+  - title: Generieren Sie ein Trident Protect-Supportpaket
     url: "/trident-protect/trident-protect-generate-support-bundle.html"
-  - title: Verbesserter Trident Schutz
+  - title: Upgrade Trident Protect
     url: "/trident-protect/trident-protect-upgrade.html"
 - title: Anwendungen verwalten und schützen
   entries:

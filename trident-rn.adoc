@@ -137,9 +137,9 @@ NOTE: Diese Funktion ist experimentell und unterstützt derzeit nur eingeschrän
 
 
 
-=== Trident -Schutz
+=== Trident Protect
 
-NetApp Trident Protect bietet erweiterte Funktionen zur Anwendungsdatenverwaltung, die die Funktionalität und Verfügbarkeit von Stateful-Kubernetes-Anwendungen verbessern, die von NetApp ONTAP Speichersystemen und dem NetApp Trident CSI-Speicherbereitsteller unterstützt werden.
+NetApp Trident Protect bietet fortschrittliche Anwendungsdatenverwaltungsfunktionen, die die Funktionalität und Verfügbarkeit zustandsbehafteter Kubernetes-Anwendungen verbessern, die von NetApp ONTAP -Speichersystemen und dem NetApp Trident CSI-Speicherbereitsteller unterstützt werden.
 
 
 
@@ -243,21 +243,21 @@ Ab Trident 25.02 enthält die Zusammenfassung „Neuerungen“ Details zu Verbes
 
 
 
-=== Trident -Schutz
+=== Trident Protect
 
-NetApp Trident Protect bietet erweiterte Funktionen zur Anwendungsdatenverwaltung, die die Funktionalität und Verfügbarkeit von Stateful-Kubernetes-Anwendungen verbessern, die von NetApp ONTAP Speichersystemen und dem NetApp Trident CSI-Speicherbereitsteller unterstützt werden.
+NetApp Trident Protect bietet fortschrittliche Anwendungsdatenverwaltungsfunktionen, die die Funktionalität und Verfügbarkeit zustandsbehafteter Kubernetes-Anwendungen verbessern, die von NetApp ONTAP -Speichersystemen und dem NetApp Trident CSI-Speicherbereitsteller unterstützt werden.
 
 
 
 ==== Verbesserungen
 
-* Unterstützung für Backup und Wiederherstellung von KubeVirt / OpenShift Virtualisierungs-VMs für volumeMode: File und volumeMode: Block (raw device) Speicher hinzugefügt.  Diese Unterstützung ist mit allen Trident -Treibern kompatibel und erweitert die bestehenden Schutzfunktionen bei der Replikation von Speicher mit NetApp SnapMirror und Trident Protect.
+* Unterstützung für Backup und Wiederherstellung von KubeVirt / OpenShift Virtualisierungs-VMs für volumeMode: File und volumeMode: Block (raw device) Speicher hinzugefügt. Diese Unterstützung ist mit allen Trident -Treibern kompatibel und erweitert die bestehenden Schutzfunktionen bei der Replikation von Speicher mit NetApp SnapMirror und Trident Protect.
 * Die Möglichkeit, das Einfrieren von Anwendungen in Kubevirt-Umgebungen zu steuern, wurde hinzugefügt.
 * Unterstützung für die Konfiguration von AutoSupport Proxy-Verbindungen hinzugefügt.
 * Es wurde die Möglichkeit hinzugefügt, ein Geheimnis für die Datenübertragungsverschlüsselung (Kopia / Restic) zu definieren.
 * Die Möglichkeit, einen Ausführungs-Hook manuell auszuführen, wurde hinzugefügt.
 * Die Möglichkeit, Sicherheitskontextbeschränkungen (SCCs) während der Installation von Trident Protect zu konfigurieren, wurde hinzugefügt.
-* Unterstützung für die Konfiguration von nodeSelector während der Installation von Trident Protect hinzugefügt.
+* Unterstützung für die Konfiguration des NodeSelectors während der Installation von Trident Protect hinzugefügt.
 * Unterstützung für HTTP/HTTPS-Ausgangsproxy für AppVault-Objekte hinzugefügt.
 * Erweiterter ResourceFilter, um den Ausschluss von Ressourcen mit Cluster-Bezug zu ermöglichen.
 * Unterstützung für das AWS-Sitzungstoken in den S3 AppVault-Anmeldeinformationen hinzugefügt.

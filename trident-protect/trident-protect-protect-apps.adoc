@@ -347,13 +347,13 @@ kubectl get backup -n <namespace_name> <my_backup_cr_name> -o jsonpath='{.status
 
 == Sichern und Wiederherstellen für Azure-NetApp-Dateien (ANF)-Vorgänge aktivieren
 
-Wenn Sie Trident Protect installiert haben, können Sie die speichereffiziente Backup- und Wiederherstellungsfunktionalität für Speicher-Backends aktivieren, die die Speicherklasse azure-netapp-files verwenden und vor Trident 24.06 erstellt wurden.  Diese Funktionalität funktioniert mit NFSv4-Volumes und verbraucht keinen zusätzlichen Speicherplatz aus dem Kapazitätspool.
+Wenn Sie Trident Protect installiert haben, können Sie die speichereffiziente Sicherungs- und Wiederherstellungsfunktionalität für Speicher-Backends aktivieren, die die Speicherklasse azure-netapp-files verwenden und vor Trident 24.06 erstellt wurden. Diese Funktionalität funktioniert mit NFSv4-Volumes und verbraucht keinen zusätzlichen Speicherplatz aus dem Kapazitätspool.
 
 .Bevor Sie beginnen
 Stellen Sie Folgendes sicher:
 
 * Sie haben Trident Protect installiert.
-* Sie haben eine Anwendung in Trident Protect definiert.  Diese Anwendung bietet nur eingeschränkten Schutz, bis Sie dieses Verfahren abgeschlossen haben.
+* Sie haben eine Anwendung in Trident Protect definiert. Diese Anwendung bietet nur eingeschränkten Schutz, bis Sie dieses Verfahren abgeschlossen haben.
 * Du hast `azure-netapp-files` Als Standard-Speicherklasse für Ihr Speicher-Backend ausgewählt.
 
 
@@ -383,13 +383,13 @@ Antwort:
 snapshotDirectory: "true"
 ----
 +
-Wenn das Snapshot-Verzeichnis nicht aktiviert ist, wählt Trident Protect die reguläre Backup-Funktionalität, die während des Backup-Vorgangs vorübergehend Speicherplatz im Kapazitätspool belegt.  Stellen Sie in diesem Fall sicher, dass im Kapazitätspool ausreichend Speicherplatz vorhanden ist, um ein temporäres Volume in der Größe des zu sichernden Volumes zu erstellen.
+Wenn das Snapshot-Verzeichnis nicht aktiviert ist, wird die reguläre Sicherungsfunktionalität verwendet, die während des Sicherungsvorgangs vorübergehend Speicherplatz im Kapazitätspool belegt. Stellen Sie in diesem Fall sicher, dass im Kapazitätspool ausreichend Speicherplatz vorhanden ist, um ein temporäres Volume in der Größe des zu sichernden Volumes zu erstellen.
 
 
 
 
 
 .Ergebnis
-Die Anwendung ist für die Datensicherung und -wiederherstellung mit Trident Protect bereit.  Jede PVC kann auch von anderen Anwendungen für Backups und Wiederherstellungen verwendet werden.
+Die Anwendung ist für die Datensicherung und -wiederherstellung mit Trident Protect bereit. Jede PVC kann auch von anderen Anwendungen für Backups und Wiederherstellungen verwendet werden.
 
 ====

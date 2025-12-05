@@ -4,7 +4,7 @@ permalink: trident-protect/trident-protect-upgrade.html
 keywords: trident, protect, netapp, upgrade, new, version 
 summary: Sie können Trident Protect auf die neueste Version aktualisieren, um von neuen Funktionen oder Fehlerbehebungen zu profitieren. 
 ---
-= Verbesserter Trident Schutz
+= Upgrade Trident Protect
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 
