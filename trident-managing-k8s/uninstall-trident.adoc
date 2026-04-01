@@ -15,7 +15,7 @@ summary: Sie sollten zum Deinstallieren von Trident dieselbe Methode verwenden, 
 Sie sollten zum Deinstallieren von Trident dieselbe Methode verwenden, die Sie zum Installieren von Trident verwendet haben.
 
 .Informationen zu diesem Vorgang
-* Falls Sie nach einem Upgrade Fehler beheben müssen, Abhängigkeitsprobleme auftreten oder das Upgrade fehlgeschlagen oder unvollständig war, sollten Sie Trident deinstallieren und die vorherige Version gemäß der entsprechenden Anleitung neu installieren.link:../earlier-versions.html["Version"] .  Dies ist die einzige empfohlene Methode, um auf eine frühere Version zurückzukehren.
+* Wenn Sie eine Behebung für nach einem Upgrade aufgetretene Fehler, Abhängigkeitsprobleme oder ein fehlgeschlagenes oder unvollständiges Upgrade benötigen, sollten Sie Trident deinstallieren und die frühere Version mithilfe der spezifischen Anweisungen für diese Version erneut installieren. Dies ist die einzige empfohlene Methode, um auf eine frühere Version _downzugraden_.
 * Um ein einfaches Upgrade und eine Neuinstallation zu ermöglichen, werden bei der Deinstallation von Trident weder die von Trident erstellten CRDs noch zugehörige Objekte entfernt.  Falls Sie Trident und alle zugehörigen Daten vollständig entfernen müssen, lesen Sie bitte weiter unterlink:../troubleshooting.html#completely-remove-trident-and-crds["Trident und CRDs vollständig entfernen"] .
 
 
