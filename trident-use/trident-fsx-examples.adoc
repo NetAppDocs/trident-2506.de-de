@@ -154,7 +154,7 @@ Sie können die Standardbereitstellung mithilfe dieser Optionen steuern. `defaul
 | `encryption` | Aktivieren Sie die NetApp Volumeverschlüsselung (NVE) auf dem neuen Volume; Standardwert ist `false` .  Um diese Option nutzen zu können, muss NVE auf dem Cluster lizenziert und aktiviert sein.  Wenn NAE im Backend aktiviert ist, wird jedes in Trident bereitgestellte Volume NAE-fähig sein.  Weitere Informationen finden Sie unter:link:../trident-reco/security-reco.html["Wie Trident mit NVE und NAE zusammenarbeitet"] . | `false` 
 
 
-| `luksEncryption` | LUKS-Verschlüsselung aktivieren. Siehelink:../trident-reco/security-reco.html#Use-Linux-Unified-Key-Setup-(LUKS)["Verwenden Sie Linux Unified Key Setup (LUKS)."] .  Nur SAN. | "" 
+| `luksEncryption` | Aktivieren Sie die LUKS-Verschlüsselung. Siehe link:../trident-reco/security-luks.html["Verwenden Sie Linux Unified Key Setup (LUKS)."]. Nur SAN. | "" 
 
 
 | `tieringPolicy` | zu verwendende Stufenrichtlinie	`none` |  

@@ -74,7 +74,7 @@ Um herauszufinden, welche Version Sie ursprünglich für die Installation von Tr
 
 == Schritt 3: Wählen Sie eine Upgrade-Methode aus
 
-Im Allgemeinen sollten Sie für das Upgrade dieselbe Methode verwenden, die Sie für die Erstinstallation genutzt haben.link:../trident-get-started/kubernetes-deploy.html#moving-between-installation-methods["Wechseln zwischen Installationsmethoden"] .  Es gibt zwei Möglichkeiten, Trident aufzurüsten.
+Im Allgemeinen sollten Sie für das Upgrade dieselbe Methode verwenden, die Sie für die Erstinstallation genutzt haben, jedoch können Sie link:../trident-install/kubernetes-deploy.html#moving-between-installation-methods["Wechseln zwischen Installationsmethoden"]. Es gibt zwei Möglichkeiten, Trident zu aktualisieren.
 
 * link:upgrade-operator.html["Upgrade mit dem Trident -Operator"]
 +

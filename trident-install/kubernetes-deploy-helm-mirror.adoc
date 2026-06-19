@@ -1,6 +1,6 @@
 ---
 sidebar: sidebar 
-permalink: trident-get-started/kubernetes-deploy-helm-mirror.html 
+permalink: trident-install/kubernetes-deploy-helm-mirror.html 
 keywords: deploy, Trident, operator, helm, helm chart, configuration, values, offline, air gap, gap, registry 
 summary: Sie können den Trident -Operator bereitstellen und Trident mithilfe von Helm installieren.  Dieser Prozess gilt für Installationen, bei denen die von Trident benötigten Container-Images in einer privaten Registry gespeichert sind. 
 ---
@@ -38,12 +38,12 @@ Verwendung einer Nicht-Multipathing-Konfiguration oder Verwendung von `find_mult
 
 == Den Trident -Operator bereitstellen und Trident mit Helm installieren
 
-Den Trident benutzenlink:https://netapp.github.io/trident-helm-chart["Helm Chart"^] Sie können den Trident -Operator bereitstellen und Trident in einem Schritt installieren.
+Den Trident benutzenlink:https://artifacthub.io/packages/helm/netapp-trident/trident-operator["Helm Chart"^] Sie können den Trident -Operator bereitstellen und Trident in einem Schritt installieren.
 
-Rezensionlink:../trident-get-started/kubernetes-deploy.html["Installationsübersicht"] um sicherzustellen, dass Sie die Installationsvoraussetzungen erfüllt und die richtige Installationsoption für Ihre Umgebung ausgewählt haben.
+Überprüfen Sie link:../trident-install/kubernetes-deploy.html["Installationsübersicht"], um sicherzustellen, dass Sie die Installationsvoraussetzungen erfüllt und die richtige Installationsoption für Ihre Umgebung ausgewählt haben.
 
 .Bevor Sie beginnen
-Zusätzlich zu denlink:../trident-get-started/kubernetes-deploy.html#before-you-deploy["Bereitstellungsvoraussetzungen"] Sie brauchenlink:https://v3.helm.sh/["Helm Version 3"^] .
+Zusätzlich zu dem link:../trident-install/kubernetes-deploy.html#before-you-deploy["Bereitstellungsvoraussetzungen"] benötigen Sie link:https://v3.helm.sh/["Helm Version 3"^].
 
 
 IMPORTANT: Bei der Installation von Trident in einem privaten Repository, wenn Sie die `imageRegistry` Um den Speicherort des Repositorys anzugeben, verwenden Sie nicht `/netapp/` im Repository-Pfad.

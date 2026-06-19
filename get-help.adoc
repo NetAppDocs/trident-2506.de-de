@@ -102,5 +102,5 @@ Um Hilfe zu Trident zu erhalten, erstellen Sie ein Support-Bundle mit `tridentct
 == Weitere Informationen
 
 * link:https://github.com/NetApp/trident["Trident -Ressourcen"^]
-* link:https://cloud.netapp.com/kubernetes-hub["Kubernetes Hub"^]
+* link:https://www.netapp.com/console/["Kubernetes Hub"^]
 

@@ -141,7 +141,7 @@ Sie können ein Volume löschen, das von mehreren Namespaces gemeinsam genutzt w
 
 == Verwenden `tridentctl get` Abfrage untergeordneter Volumes
 
-Verwenden des[`tridentctl` Mit diesem Dienstprogramm können Sie das ausführen `get` Befehl zum Abrufen untergeordneter Volumes.  Weitere Informationen finden Sie unter folgendem Link:../trident-reference/tridentctl.html[`tridentctl` Befehle und Optionen].
+Mit dem [`tridentctl`-Dienstprogramm kann der  `get`-Befehl ausgeführt werden, um untergeordnete Volumes abzurufen. Weitere Informationen sind unter link:../trident-managing-k8s/tridentctl.html[`tridentctl` (Befehle und Optionen) verfügbar.
 
 [listing]
 ----
@@ -170,6 +170,5 @@ Flaggen:
 
 Um mehr über den Volume-Zugriff über Namespaces hinweg zu erfahren:
 
-* Besuchenlink:https://cloud.netapp.com/blog/astra-blg-sharing-volumes-between-namespaces-say-hello-to-cross-namespace-volume-access["Gemeinsame Nutzung von Volumes zwischen Namespaces: Lernen Sie den Namespace-übergreifenden Volume-Zugriff kennen."^] .
 * Sehen Sie sich die Demo an auflink:https://media.netapp.com/page/9071d19d-1438-5ed3-a7aa-ea4d73c28b7f/solutions-products["NetAppTV"^] .
 
