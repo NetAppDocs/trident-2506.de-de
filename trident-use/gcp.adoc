@@ -16,6 +16,7 @@ Erfahren Sie anhand der bereitgestellten Beispielkonfigurationen, wie Sie den Ne
 
 
 
+[[google-cloud-driver-details]]
 == Details zum Google Cloud-Treiber
 
 Trident bietet die `gcp-cvs` Der Treiber soll mit dem Cluster kommunizieren.  Unterstützte Zugriffsmodi sind: _ReadWriteOnce_ (RWO), _ReadOnlyMany_ (ROX), _ReadWriteMany_ (RWX), _ReadWriteOncePod_ (RWOP).
@@ -37,6 +38,7 @@ RWO, ROX, RWX, RWOP
 |===
 
 
+[[learn-about-trident-support-for-cloud-volumes-service-for-google-cloud]]
 == Erfahren Sie mehr über die Trident Unterstützung für den Cloud Volumes Service für Google Cloud.
 
 Trident kann Cloud Volumes Service Volumes in einem von zwei link:https://docs.cloud.google.com/netapp/volumes/docs/discover/overview["Servicearten"^] erstellen:
@@ -67,6 +69,7 @@ Zur Konfiguration und Nutzung des  https://www.netapp.com/google-cloud/netapp-vo
 
 
 
+[[backend-configuration-options]]
 == Backend-Konfigurationsoptionen
 
 Jedes Backend stellt Volumes in einer einzelnen Google Cloud-Region bereit.  Um Volumes in anderen Regionen zu erstellen, können Sie zusätzliche Backends definieren.
@@ -129,6 +132,7 @@ Jedes Backend stellt Volumes in einer einzelnen Google Cloud-Region bereit.  Um 
 |===
 
 
+[[volume-provisioning-options]]
 == Volumenbereitstellungsoptionen
 
 Sie können die Standard-Volume-Bereitstellung in der `defaults` Abschnitt der Konfigurationsdatei.
@@ -151,6 +155,7 @@ Sie können die Standard-Volume-Bereitstellung in der `defaults` Abschnitt der K
 |===
 
 
+[[cvs-performance-service-type-examples]]
 == Beispiele für CVS-Performance-Diensttypen
 
 Die folgenden Beispiele enthalten Beispielkonfigurationen für den Diensttyp CVS-Performance.
@@ -287,6 +292,7 @@ storage:
 ====
 
 
+[[storage-class-definitions]]
 === Speicherklassendefinitionen
 
 Die folgenden StorageClass-Definitionen gelten für das Konfigurationsbeispiel des virtuellen Pools.  Verwenden `parameters.selector` Sie können für jede StorageClass den virtuellen Pool angeben, der zum Hosten eines Volumes verwendet wird.  Das Volumen wird die im gewählten Pool definierten Aspekte aufweisen.
@@ -359,6 +365,7 @@ allowVolumeExpansion: true
 
 
 
+[[cvs-service-type-examples]]
 == Beispiele für CVS-Diensttypen
 
 Die folgenden Beispiele enthalten Beispielkonfigurationen für den CVS-Diensttyp.
@@ -431,6 +438,7 @@ serviceLevel: Standardsw
 ====
 
 
+[[whats-next]]
 == Wie geht es weiter?
 
 Nachdem Sie die Backend-Konfigurationsdatei erstellt haben, führen Sie folgenden Befehl aus:

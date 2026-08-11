@@ -16,6 +16,7 @@ Erfahren Sie mehr über die Backend-Konfigurationsoptionen für Google Cloud Net
 
 
 
+[[backend-configuration-options]]
 == Backend-Konfigurationsoptionen
 
 Jedes Backend stellt Volumes in einer einzelnen Google Cloud-Region bereit.  Um Volumes in anderen Regionen zu erstellen, können Sie zusätzliche Backends definieren.
@@ -74,6 +75,7 @@ Jedes Backend stellt Volumes in einer einzelnen Google Cloud-Region bereit.  Um 
 |===
 
 
+[[volume-provisioning-options]]
 == Volumenbereitstellungsoptionen
 
 Sie können die Standard-Volume-Bereitstellung in der `defaults` Abschnitt der Konfigurationsdatei.
@@ -96,6 +98,7 @@ Sie können die Standard-Volume-Bereitstellung in der `defaults` Abschnitt der K
 |===
 
 
+[[example-configurations]]
 == Beispielkonfigurationen
 
 Die folgenden Beispiele zeigen Basiskonfigurationen, bei denen die meisten Parameter auf Standardwerte eingestellt bleiben.  Dies ist die einfachste Möglichkeit, ein Backend zu definieren.
@@ -339,6 +342,7 @@ supportedTopologies:
 ====
 
 
+[[whats-next]]
 == Wie geht es weiter?
 
 Nachdem Sie die Backend-Konfigurationsdatei erstellt haben, führen Sie folgenden Befehl aus:
@@ -366,6 +370,7 @@ Nachdem Sie das Problem mit der Konfigurationsdatei identifiziert und behoben ha
 
 
 
+[[storage-class-definitions]]
 == Speicherklassendefinitionen
 
 Im Folgenden finden Sie eine grundlegende `StorageClass` Definition, die sich auf das oben genannte Backend bezieht.
@@ -419,6 +424,7 @@ Weitere Einzelheiten zu Speicherklassen finden Sie unterlink:../trident-use/crea
 
 
 
+[[example-definitions-for-smb-volumes]]
 === Beispieldefinitionen für SMB-Volumes
 
 Verwenden `nasType` , `node-stage-secret-name` , Und `node-stage-secret-namespace` Sie können ein SMB-Volume angeben und die erforderlichen Active Directory-Anmeldeinformationen bereitstellen.  Für das Node-Stage-Secret kann jeder Active Directory-Benutzer/jedes Passwort mit beliebigen/keinen Berechtigungen verwendet werden.
@@ -479,6 +485,7 @@ NOTE: `nasType: smb`Filter für Pools, die SMB-Volumes unterstützen. `nasType: 
 
 
 
+[[pvc-definition-example]]
 === PVC-Definitionsbeispiel
 
 [source, yaml]

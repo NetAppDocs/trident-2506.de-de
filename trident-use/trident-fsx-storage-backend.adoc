@@ -13,6 +13,7 @@ summary: 'Durch die Verwendung von Trident mit Amazon FSx for NetApp ONTAP könn
 
 
 
+[[ontap-san-and-nas-driver-integration]]
 == ONTAP SAN- und NAS-Treiberintegration
 
 Um ein Speicher-Backend zu erstellen, müssen Sie eine Konfigurationsdatei entweder im JSON- oder im YAML-Format erstellen.  Die Datei muss den gewünschten Speichertyp (NAS oder SAN), das Dateisystem und die SVM, von der die Daten bezogen werden sollen, sowie die Art der Authentifizierung angeben.  Das folgende Beispiel zeigt, wie Sie NAS-basierten Speicher definieren und ein AWS-Secret verwenden, um die Anmeldeinformationen für die gewünschte SVM zu speichern:
@@ -100,6 +101,7 @@ backend-tbc-ontap-nas        tbc-ontap-nas        933e0071-66ce-4324-b9ff-f96d91
 
 
 
+[[fsx-for-ontap-driver-details]]
 == FSx für ONTAP Treiberdetails
 
 Sie können Trident mit Amazon FSx for NetApp ONTAP mithilfe der folgenden Treiber integrieren:
@@ -132,6 +134,7 @@ backend-fsx-ontap-nas   backend-fsx-ontap-nas   7a551921-997c-4c37-a1d1-f2f4c87f
 ----
 
 
+[[backend-advanced-configuration-and-examples]]
 == Erweiterte Backend-Konfiguration und Beispiele
 
 Die folgenden Tabellen enthalten die Backend-Konfigurationsoptionen:
@@ -224,6 +227,7 @@ Die folgenden Tabellen enthalten die Backend-Konfigurationsoptionen:
 |===
 
 
+[[backend-configuration-options-for-provisioning-volumes]]
 == Backend-Konfigurationsoptionen für die Bereitstellung von Volumes
 
 Sie können die Standardbereitstellung mithilfe dieser Optionen steuern. `defaults` Abschnitt der Konfiguration.  Ein Beispiel finden Sie in den folgenden Konfigurationsbeispielen.
@@ -270,6 +274,7 @@ Sie können die Standardbereitstellung mithilfe dieser Optionen steuern. `defaul
 |===
 
 
+[[prepare-to-provision-smb-volumes]]
 == Bereiten Sie die Bereitstellung von SMB-Volumes vor
 
 Sie können SMB-Volumes mithilfe von … bereitstellen. `ontap-nas` Treiber.  Bevor Sie fertigstellen<<ONTAP SAN- und NAS-Treiberintegration>> Führen Sie die folgenden Schritte aus.

@@ -19,6 +19,7 @@ NOTE: Ignorieren Sie diesen Abschnitt, wenn Sie CHAP verwenden. Dies wird empfoh
 
 
 
+[[learn-about-volume-access-groups]]
 == Erfahren Sie mehr über Volumenzugriffsgruppen
 
 Trident kann Volume-Zugriffsgruppen verwenden, um den Zugriff auf die von ihm bereitgestellten Volumes zu steuern.  Wenn CHAP deaktiviert ist, erwartet es, eine Zugriffsgruppe namens „…“ zu finden. `trident` es sei denn, Sie geben in der Konfiguration eine oder mehrere Zugriffsgruppen-IDs an.

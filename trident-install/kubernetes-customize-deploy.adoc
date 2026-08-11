@@ -16,6 +16,7 @@ Der Trident -Operator ermöglicht die Anpassung der Trident Installation mithilf
 
 
 
+[[understanding-controller-pods-and-node-pods]]
 == Controller-Pods und Node-Pods verstehen
 
 Trident läuft als ein einzelner Controller-Pod sowie als ein Node-Pod auf jedem Worker-Knoten im Cluster.  Der Node-Pod muss auf jedem Host ausgeführt werden, auf dem Sie möglicherweise ein Trident -Volume einbinden möchten.
@@ -28,6 +29,7 @@ Kuberneteslink:https://kubernetes.io/docs/concepts/scheduling-eviction/assign-po
 
 
 
+[[configuration-options]]
 == Konfigurationsoptionen
 
 
@@ -147,6 +149,7 @@ NOTE: Weitere Informationen zur Formatierung von Pod-Parametern finden Sie unter
 
 
 
+[[details-about-force-detach]]
 === Details zum erzwungenen Abtrennen
 
 Die Option „Zwangstrennung“ ist verfügbar für `ontap-san` , `ontap-san-economy` , `ontap-nas` , Und `ontap-nas-economy` nur. Bevor Sie die erzwungene Trennung aktivieren, muss das Non-Graceful Node Shutdown (NGNS) im Kubernetes-Cluster aktiviert werden. NGNS ist standardmäßig für Kubernetes 1.28 und höher aktiviert.  Weitere Informationen finden Sie unterlink:https://kubernetes.io/docs/concepts/cluster-administration/node-shutdown/#non-graceful-node-shutdown["Kubernetes: Nicht ordnungsgemäßes Herunterfahren eines Knotens"^] .
@@ -175,6 +178,7 @@ Sobald der Zustand des Knotens wiederhergestellt und die Beschädigung entfernt 
 
 
 
+[[sample-configurations]]
 == Beispielkonfigurationen
 
 Sie können die Attribute in verwenden<<Konfigurationsoptionen>> bei der Definition `TridentOrchestrator` um Ihre Installation individuell anzupassen.

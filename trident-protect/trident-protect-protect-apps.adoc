@@ -21,6 +21,7 @@ NOTE: Sie können Trident Protect so konfigurieren, dass Dateisysteme während D
 
 
 
+[[create-an-on-demand-snapshot]]
 == Erstellen Sie einen On-Demand-Snapshot
 
 Sie können jederzeit einen On-Demand-Snapshot erstellen.
@@ -85,6 +86,7 @@ tridentctl-protect create snapshot <my_snapshot_name> --appvault <my_appvault_na
 ====
 
 
+[[create-an-on-demand-backup]]
 == Erstellen Sie eine bedarfsgesteuerte Datensicherung.
 
 Sie können eine App jederzeit sichern.
@@ -172,6 +174,7 @@ Sie können optional die `--full-backup` Kennzeichen zur Angabe, ob eine Sicheru
 ====
 
 
+[[create-a-data-protection-schedule]]
 == Erstellen Sie einen Datenschutzplan
 
 Eine Schutzrichtlinie schützt eine App, indem sie nach einem festgelegten Zeitplan Snapshots, Backups oder beides erstellt. Sie können stündlich, täglich, wöchentlich und monatlich Snapshots und Backups erstellen und die Anzahl der aufzubewahrenden Kopien angeben. Sie können eine nicht inkrementelle vollständige Sicherung planen, indem Sie die Annotation „full-backup-rule“ verwenden. Standardmäßig sind alle Sicherungen inkrementell. Durch regelmäßiges Durchführen einer vollständigen Sicherung und inkrementeller Sicherungen zwischendurch können Sie das mit Wiederherstellungen verbundene Risiko verringern.
@@ -297,6 +300,7 @@ Für Zeitpläne, die nur Momentaufnahmen enthalten, stellen Sie Folgendes ein: `
 ====
 
 
+[[delete-a-snapshot]]
 == Löschen eines Snapshots
 
 Löschen Sie die geplanten oder bedarfsgesteuerten Snapshots, die Sie nicht mehr benötigen.
@@ -312,6 +316,7 @@ kubectl delete snapshot <snapshot_name> -n my-app-namespace
 
 
 
+[[delete-a-backup]]
 == Sicherung löschen
 
 Löschen Sie die geplanten oder bedarfsgesteuerten Backups, die Sie nicht mehr benötigen.
@@ -330,6 +335,7 @@ kubectl delete backup <backup_name> -n my-app-namespace
 
 
 
+[[check-the-status-of-a-backup-operation]]
 == Überprüfen Sie den Status eines Sicherungsvorgangs
 
 Über die Befehlszeile können Sie den Status eines laufenden, abgeschlossenen oder fehlgeschlagenen Sicherungsvorgangs überprüfen.
@@ -345,6 +351,7 @@ kubectl get backup -n <namespace_name> <my_backup_cr_name> -o jsonpath='{.status
 
 
 
+[[enable-backup-and-restore-for-azure-netapp-files-anf-operations]]
 == Sichern und Wiederherstellen für Azure-NetApp-Dateien (ANF)-Vorgänge aktivieren
 
 Wenn Sie Trident Protect installiert haben, können Sie die speichereffiziente Sicherungs- und Wiederherstellungsfunktionalität für Speicher-Backends aktivieren, die die Speicherklasse azure-netapp-files verwenden und vor Trident 24.06 erstellt wurden. Diese Funktionalität funktioniert mit NFSv4-Volumes und verbraucht keinen zusätzlichen Speicherplatz aus dem Kapazitätspool.

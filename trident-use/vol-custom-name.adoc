@@ -16,6 +16,7 @@ Mit Trident können Sie den von Ihnen erstellten Datenträgern aussagekräftige 
 
 
 
+[[before-you-begin]]
 == Bevor Sie beginnen
 
 Unterstützung für anpassbare Datenträgernamen und -bezeichnungen:
@@ -27,6 +28,7 @@ Unterstützung für anpassbare Datenträgernamen und -bezeichnungen:
 
 
 
+[[limitations]]
 == Einschränkungen
 
 . Anpassbare Volumennamen sind nur mit ONTAP -Treibern für lokale Installationen kompatibel.
@@ -35,6 +37,7 @@ Unterstützung für anpassbare Datenträgernamen und -bezeichnungen:
 
 
 
+[[key-behaviors-of-customizable-volume-names]]
 == Wichtige Verhaltensweisen von anpassbaren Volumennamen
 
 . Wenn aufgrund ungültiger Syntax in einer Namensvorlage ein Fehler auftritt, schlägt die Backend-Erstellung fehl.  Falls die Anwendung der Vorlage jedoch fehlschlägt, wird das Volume gemäß der bestehenden Namenskonvention benannt.
@@ -43,6 +46,7 @@ Unterstützung für anpassbare Datenträgernamen und -bezeichnungen:
 
 
 
+[[backend-configuration-examples-with-name-template-and-labels]]
 == Backend-Konfigurationsbeispiele mit Namensvorlage und Bezeichnungen
 
 Benutzerdefinierte Namensvorlagen können auf Stamm- und/oder Poolebene definiert werden.
@@ -103,6 +107,7 @@ Benutzerdefinierte Namensvorlagen können auf Stamm- und/oder Poolebene definier
 ----
 
 
+[[name-template-examples]]
 == Beispiele für Namensvorlagen
 
 *Beispiel 1*:
@@ -119,6 +124,7 @@ Benutzerdefinierte Namensvorlagen können auf Stamm- und/oder Poolebene definier
 ----
 
 
+[[points-to-consider]]
 == Zu berücksichtigende Punkte
 
 . Bei Volumenimporten werden die Etiketten nur dann aktualisiert, wenn das vorhandene Volumen Etiketten in einem bestimmten Format aufweist.  Zum Beispiel: `{"provisioning":{"Cluster":"ClusterA", "PVC": "pvcname"}}` .

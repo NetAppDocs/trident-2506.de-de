@@ -16,6 +16,7 @@ Beachten Sie bei der Bereitstellung von Trident die hier aufgeführten Empfehlun
 
 
 
+[[deploy-to-a-dedicated-namespace]]
 == In einem dedizierten Namensraum bereitstellen
 
 https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/["Namensräume"^]Sie sorgen für eine administrative Trennung zwischen verschiedenen Anwendungen und stellen ein Hindernis für die gemeinsame Nutzung von Ressourcen dar.  Beispielsweise kann ein PVC aus einem Namespace nicht aus einem anderen Namespace verwendet werden.  Trident stellt PV-Ressourcen für alle Namespaces im Kubernetes-Cluster bereit und nutzt daher ein Servicekonto mit erhöhten Berechtigungen.
@@ -24,6 +25,7 @@ Darüber hinaus könnte der Zugriff auf den Trident Pod einem Benutzer den Zugri
 
 
 
+[[use-quotas-and-range-limits-to-control-storage-consumption]]
 == Nutzen Sie Quoten und Bereichsgrenzen, um den Speicherverbrauch zu kontrollieren.
 
 Kubernetes verfügt über zwei Funktionen, die in Kombination einen leistungsstarken Mechanismus zur Begrenzung des Ressourcenverbrauchs von Anwendungen bieten.  Der https://kubernetes.io/docs/concepts/policy/resource-quotas/#storage-resource-quota["Speicherquotenmechanismus"^] Ermöglicht dem Administrator die Implementierung globaler und speicherklassenspezifischer Kapazitäts- und Objektanzahlbeschränkungen pro Namespace.  Des Weiteren, unter Verwendung eines https://kubernetes.io/docs/tasks/administer-cluster/limit-storage-consumption/#limitrange-to-limit-requests-for-storage["Reichweitenbegrenzung"^] stellt sicher, dass die PVC-Anfragen sowohl einen minimalen als auch einen maximalen Wert nicht überschreiten, bevor die Anfrage an den Provisionierer weitergeleitet wird.

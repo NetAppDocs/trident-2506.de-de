@@ -23,6 +23,7 @@ Sie können Volumes erstellen, löschen, ihre Größe ändern, Snapshots erstell
 
 
 
+[[configure-in-flight-kerberos-encryption-with-on-premise-ontap-volumes]]
 == Konfigurieren der Kerberos-Verschlüsselung während der Übertragung mit lokalen ONTAP -Volumes
 
 Sie können die Kerberos-Verschlüsselung für den Speicherdatenverkehr zwischen Ihrem verwalteten Cluster und einem lokalen ONTAP -Speicher-Backend aktivieren.
@@ -40,6 +41,7 @@ NOTE: Die Kerberos-Verschlüsselung für NFS-Datenverkehr mit lokalen ONTAP -Spe
 
 
 
+[[add-or-modify-ontap-export-policies]]
 === ONTAP Exportrichtlinien hinzufügen oder ändern
 
 Sie müssen bestehenden ONTAP Exportrichtlinien Regeln hinzufügen oder neue Exportrichtlinien erstellen, die die Kerberos-Verschlüsselung für das Root-Volume der ONTAP Speicher-VM sowie für alle ONTAP -Volumes unterstützen, die mit dem Upstream-Kubernetes-Cluster geteilt werden.  Die von Ihnen hinzugefügten Exportrichtlinienregeln oder die von Ihnen erstellten neuen Exportrichtlinien müssen die folgenden Zugriffsprotokolle und Zugriffsberechtigungen unterstützen:
@@ -77,6 +79,7 @@ In der folgenden Dokumentation finden Sie Informationen zum Erstellen von ONTAP 
 
 
 
+[[create-a-storage-backend]]
 === Erstellen Sie ein Speicher-Backend
 
 Sie können eine Trident -Speicher-Backend-Konfiguration erstellen, die die Kerberos-Verschlüsselungsfunktion beinhaltet.
@@ -144,6 +147,7 @@ Nachdem Sie das Problem mit der Konfigurationsdatei identifiziert und behoben ha
 
 
 
+[[create-a-storage-class]]
 === Erstellen einer Speicherklasse
 
 Sie können eine Speicherklasse erstellen, um Volumes mit Kerberos-Verschlüsselung bereitzustellen.
@@ -202,12 +206,14 @@ ontap-nas-sc    csi.trident.netapp.io   15h
 
 
 
+[[provision-volumes]]
 === Bereitstellungsmengen
 
 Nachdem Sie ein Speicher-Backend und eine Speicherklasse erstellt haben, können Sie nun ein Volume bereitstellen. Anweisungen hierzu finden Sie unter https://docs.netapp.com/us-en/trident/trident-use/vol-provision.html["Bereitstellung eines Volumens"^] .
 
 
 
+[[configure-in-flight-kerberos-encryption-with-azure-netapp-files-volumes]]
 == Konfigurieren der Kerberos-Verschlüsselung während der Übertragung mit Azure NetApp Files -Volumes
 
 Sie können die Kerberos-Verschlüsselung für den Speicherdatenverkehr zwischen Ihrem verwalteten Cluster und einem einzelnen Azure NetApp Files -Speicher-Backend oder einem virtuellen Pool von Azure NetApp Files -Speicher-Backends aktivieren.
@@ -221,6 +227,7 @@ Sie können die Kerberos-Verschlüsselung für den Speicherdatenverkehr zwischen
 
 
 
+[[create-a-storage-backend]]
 === Erstellen Sie ein Speicher-Backend
 
 Sie können eine Azure NetApp Files -Speicher-Backend-Konfiguration erstellen, die die Kerberos-Verschlüsselungsfunktion beinhaltet.
@@ -347,6 +354,7 @@ Nachdem Sie das Problem mit der Konfigurationsdatei identifiziert und behoben ha
 
 
 
+[[create-a-storage-class]]
 === Erstellen einer Speicherklasse
 
 Sie können eine Speicherklasse erstellen, um Volumes mit Kerberos-Verschlüsselung bereitzustellen.
@@ -391,6 +399,7 @@ sc-nfs       csi.trident.netapp.io   15h
 
 
 
+[[provision-volumes]]
 === Bereitstellungsmengen
 
 Nachdem Sie ein Speicher-Backend und eine Speicherklasse erstellt haben, können Sie nun ein Volume bereitstellen. Anweisungen hierzu finden Sie unter https://docs.netapp.com/us-en/trident/trident-use/vol-provision.html["Bereitstellung eines Volumens"^] .

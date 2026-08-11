@@ -16,6 +16,7 @@ Mit Trident können Sie ein Volume in einem primären Namespace erstellen und es
 
 
 
+[[features]]
 == Features
 
 Mit dem TridentVolumeReference CR können Sie ReadWriteMany (RWX) NFS-Volumes sicher über einen oder mehrere Kubernetes-Namespaces hinweg freigeben.  Diese Kubernetes-native Lösung bietet folgende Vorteile:
@@ -31,6 +32,7 @@ image::cross-namespace-sharing.png[Ein konzeptionelles Diagramm zur gemeinsamen 
 
 
 
+[[quick-start]]
 == Schnellstart
 
 Die Einrichtung der NFS-Volume-Freigabe ist in wenigen Schritten erledigt.
@@ -53,6 +55,7 @@ Der Eigentümer des Ziel-Namensraums erstellt den untergeordneten PVC, um die Da
 
 
 
+[[configure-the-source-and-destination-namespaces]]
 == Konfigurieren Sie die Quell- und Ziel-Namespaces
 
 Um die Sicherheit zu gewährleisten, erfordert die gemeinsame Nutzung von Namespaces über verschiedene Namensräume hinweg die Zusammenarbeit und das Handeln des Quell-Namespace-Inhabers, des Cluster-Administrators und des Ziel-Namespace-Inhabers.  Die Benutzerrolle wird in jedem Schritt festgelegt.
@@ -133,12 +136,14 @@ Trident liest die `shareFromPVC` Es wird eine Annotation auf dem Ziel-PVC vorgen
 
 
 
+[[delete-a-shared-volume]]
 == Ein freigegebenes Volume löschen
 
 Sie können ein Volume löschen, das von mehreren Namespaces gemeinsam genutzt wird.  Trident wird den Zugriff auf das Volume im Quell-Namespace entfernen und den Zugriff für andere Namespaces, die das Volume gemeinsam nutzen, aufrechterhalten.  Wenn alle Namespaces, die auf das Volume verweisen, entfernt werden, löscht Trident das Volume.
 
 
 
+[[use-tridentctl-get-to-query-subordinate-volumes]]
 == Verwenden `tridentctl get` Abfrage untergeordneter Volumes
 
 Mit dem [`tridentctl`-Dienstprogramm kann der  `get`-Befehl ausgeführt werden, um untergeordnete Volumes abzurufen. Weitere Informationen sind unter link:../trident-managing-k8s/tridentctl.html[`tridentctl` (Befehle und Optionen) verfügbar.
@@ -157,6 +162,7 @@ Flaggen:
 
 
 
+[[limitations]]
 == Einschränkungen
 
 * Trident kann nicht verhindern, dass Ziel-Namespaces auf das gemeinsam genutzte Volume schreiben.  Sie sollten Dateisperrungen oder andere Verfahren verwenden, um das Überschreiben von gemeinsam genutzten Datenträgerdaten zu verhindern.
@@ -166,6 +172,7 @@ Flaggen:
 
 
 
+[[for-more-information]]
 == Weitere Informationen
 
 Um mehr über den Volume-Zugriff über Namespaces hinweg zu erfahren:

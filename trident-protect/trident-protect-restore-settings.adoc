@@ -18,6 +18,7 @@ Sie können Wiederherstellungsvorgänge mithilfe erweiterter Einstellungen wie A
 
 
 
+[[namespace-annotations-and-labels-during-restore-and-failover-operations]]
 == Namespace-Annotationen und -Bezeichnungen während Wiederherstellungs- und Failover-Operationen
 
 Bei Wiederherstellungs- und Failover-Vorgängen werden die Bezeichnungen und Annotationen im Ziel-Namensraum so angepasst, dass sie mit den Bezeichnungen und Annotationen im Quell-Namensraum übereinstimmen.  Es werden Bezeichnungen oder Annotationen aus dem Quell-Namensraum hinzugefügt, die im Ziel-Namensraum nicht existieren, und alle bereits vorhandenen Bezeichnungen oder Annotationen werden überschrieben, um dem Wert aus dem Quell-Namensraum zu entsprechen.  Labels oder Annotationen, die nur im Ziel-Namensraum existieren, bleiben unverändert.
@@ -38,6 +39,7 @@ Wenn Sie die Quellanwendung mit Helm installiert haben `--create-namespace` Flag
 
 
 
+[[example]]
 === Beispiel
 
 Das folgende Beispiel zeigt einen Quell- und einen Ziel-Namensraum, die jeweils unterschiedliche Annotationen und Bezeichnungen aufweisen.  Sie können den Zustand des Ziel-Namensraums vor und nach der Operation einsehen und erkennen, wie die Annotationen und Labels im Ziel-Namensraum kombiniert oder überschrieben werden.
@@ -100,12 +102,14 @@ Die folgende Tabelle veranschaulicht den Zustand des Beispiel-Ziel-Namespace nac
 |===
 
 
+[[supported-fields]]
 == Unterstützte Felder
 
 In diesem Abschnitt werden zusätzliche Felder beschrieben, die für Wiederherstellungsvorgänge verfügbar sind.
 
 
 
+[[storage-class-mapping]]
 === Speicherklassenzuordnung
 
 Der `spec.storageClassMapping` Das Attribut definiert eine Zuordnung von einer in der Quellanwendung vorhandenen Speicherklasse zu einer neuen Speicherklasse im Zielcluster. Sie können dies verwenden, wenn Sie Anwendungen zwischen Clustern mit unterschiedlichen Speicherklassen migrieren oder wenn Sie das Speicher-Backend für BackupRestore-Vorgänge ändern.
@@ -122,6 +126,7 @@ storageClassMapping:
 ----
 
 
+[[supported-annotations]]
 == Unterstützte Annotationen
 
 Dieser Abschnitt listet die unterstützten Annotationen zur Konfiguration verschiedener Verhaltensweisen im System auf.  Wenn eine Annotation nicht explizit vom Benutzer festgelegt wird, verwendet das System den Standardwert.

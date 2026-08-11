@@ -16,6 +16,7 @@ Sie können vorhandene Speichervolumes als Kubernetes PV mit  `tridentctl import
 
 
 
+[[overview-and-considerations]]
 == Überblick und Überlegungen
 
 Sie könnten beispielsweise ein Volume in Trident importieren, um:
@@ -52,6 +53,7 @@ TIP: Diese Option ist nützlich, wenn Sie Kubernetes für containerisierte Workl
 
 
 
+[[import-a-volume]]
 == Importieren Sie ein Volume
 
 Sie können ein Volume entweder mit  `tridentctl import` oder durch das Erstellen einer PVC mit Trident-Importanmerkungen importieren.
@@ -147,12 +149,14 @@ Trident wird das Volumen automatisch importieren und es an das PVC binden.
 ====
 
 
+[[examples]]
 == Beispiele
 
 Prüfen Sie die folgenden Beispiele für den Volumenimport auf unterstützte Treiber.
 
 
 
+[[ontap-nas-and-ontap-nas-flexgroup]]
 === ONTAP NAS und ONTAP NAS FlexGroup
 
 Trident unterstützt den Volumenimport über die `ontap-nas` Und `ontap-nas-flexgroup` Fahrer.
@@ -260,6 +264,7 @@ spec:
 ====
 
 
+[[ontap-san]]
 === ONTAP SAN
 
 Trident unterstützt den Volumenimport mithilfe der `ontap-san` (iSCSI, NVMe/TCP und FC) und `ontap-san-economy` Treiber.
@@ -312,6 +317,7 @@ image:./san-import-igroup.png["Bild von LUNS, abgebildet auf iqn und Cluster iqn
 ====
 
 
+[[element]]
 === Element
 
 Trident unterstützt die NetApp Element Software und den NetApp HCI Volume-Import mithilfe von `solidfire-san` Treiber.
@@ -333,6 +339,7 @@ tridentctl import volume element_default element-managed -f pvc-basic-import.yam
 ----
 
 
+[[google-cloud-platform]]
 === Google Cloud Platform
 
 Trident unterstützt den Volumenimport über die `gcp-cvs` Treiber.
@@ -355,6 +362,7 @@ tridentctl import volume gcpcvs_YEppr adroit-jolly-swift -f <path-to-pvc-file> -
 ----
 
 
+[[azure-netapp-files]]
 === Azure NetApp Files
 
 Trident unterstützt den Volumenimport über die `azure-netapp-files` Treiber.
@@ -376,6 +384,7 @@ tridentctl import volume azurenetappfiles_40517 importvol1 -f <path-to-pvc-file>
 ----
 
 
+[[google-cloud-netapp-volumes]]
 === Google Cloud NetApp Volumes
 
 Trident unterstützt den Volumenimport über die `google-cloud-netapp-volumes` Treiber.

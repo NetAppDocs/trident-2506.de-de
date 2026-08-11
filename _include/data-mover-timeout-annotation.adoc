@@ -4,6 +4,7 @@
 
 
 
+[[data-mover-timeout-annotation]]
 == Datenübertragungs-Timeout-Anmerkung
 
 Während Sicherungs- und Wiederherstellungsvorgängen können Sie die Annotation verwenden. `protect.trident.netapp.io/data-mover-timeout-sec` um das Timeout für Datenverschiebungsvorgänge zu konfigurieren.  Diese Anmerkung legt die maximale Wartezeit in Sekunden fest, die ein Datenverschiebungs-Tool auf den Abschluss einer bestimmten Operation warten soll, bevor ein Timeout auftritt.  Es ist besonders nützlich in Situationen, in denen Netzwerkprobleme oder andere Faktoren den Datentransfervorgang behindern könnten.  Es hilft dabei, blockierte Vorgänge zu erkennen und zu beheben, anstatt ein allgemeines Timeout für den gesamten Prozess festzulegen.  Wenn beispielsweise aufgrund von Netzwerkproblemen keine Fortschritte bei der Wiederherstellung der Datenträgerdaten erzielt werden können, wird der Vorgang nach Ablauf der angegebenen Zeit abgebrochen.

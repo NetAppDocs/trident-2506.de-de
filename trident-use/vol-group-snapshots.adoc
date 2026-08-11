@@ -19,6 +19,7 @@ NOTE: VolumeGroupSnapshot ist eine Beta-Funktion in Kubernetes mit Beta-APIs.  F
 
 
 
+[[create-volume-group-snapshots]]
 == Erstellen von Snapshots von Volumengruppen
 
 Die Snapshot-Funktion für Volumengruppen wird unterstützt. `ontap-san` Treiber nur für das iSCSI-Protokoll, noch nicht unterstützt mit Fibre Channel (FCP) oder NVMe/TCP.  Bevor Sie beginnen
@@ -95,6 +96,7 @@ spec:
 ----
 
 
+[[recover-volume-data-using-a-group-snapshot]]
 == Wiederherstellung von Volumendaten mithilfe eines Gruppen-Snapshots
 
 Einzelne persistente Volumes können mithilfe der einzelnen Snapshots wiederhergestellt werden, die im Rahmen des Volume Group Snapshots erstellt wurden.  Der Volume-Gruppen-Snapshot kann nicht als Einheit wiederhergestellt werden.
@@ -110,6 +112,7 @@ NOTE: Beim Wiederherstellen einer Snapshot-Kopie wird die bestehende Volume-Konf
 
 
 
+[[in-place-volume-restoration-from-a-snapshot]]
 == Wiederherstellung des Volumens direkt aus einem Snapshot
 
 Trident ermöglicht die schnelle, direkte Wiederherstellung des Volumens aus einer Momentaufnahme mithilfe der `TridentActionSnapshotRestore` (TASR) CR.  Diese CR fungiert als imperative Kubernetes-Aktion und bleibt nach Abschluss der Operation nicht erhalten.
@@ -118,6 +121,7 @@ Weitere Informationen finden Sie unter link:../trident-use/vol-snapshots.html#in
 
 
 
+[[delete-a-pv-with-associated-group-snapshots]]
 == Löschen eines PV mit zugehörigen Gruppen-Snapshots
 
 Beim Löschen eines Gruppenvolume-Snapshots:
@@ -129,6 +133,7 @@ Beim Löschen eines Gruppenvolume-Snapshots:
 
 
 
+[[deploy-a-volume-snapshot-controller]]
 == Einen Volume-Snapshot-Controller bereitstellen
 
 Falls Ihre Kubernetes-Distribution den Snapshot-Controller und die CRDs nicht enthält, können Sie diese wie folgt bereitstellen.
@@ -168,6 +173,7 @@ NOTE: Öffnen Sie gegebenenfalls `deploy/kubernetes/snapshot-controller/rbac-sna
 
 
 
+[[related-links]]
 == Weiterführende Links
 
 * link:../trident-reference/objects.html#kubernetes-volumegroupsnapshotclass-objects["VolumeGroupSnapshotClass"]
